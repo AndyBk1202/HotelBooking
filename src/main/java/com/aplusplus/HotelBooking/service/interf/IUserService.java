@@ -7,9 +7,9 @@ import com.aplusplus.HotelBooking.model.User;
 public interface IUserService {
     Response register (User user);
     Response login(LoginRequest loginRequest);
-    Response getAllUsers();
+    Response getAllCustomers();
     Response getUserBookingHistory(String userId);
-    Response deleteUser(String userId);
+    Response deleteUser(String username);
     Response getUserById(String userId);
-    Response getMyInfo(String email);
+    Response getMyInfo(String username);
 }
