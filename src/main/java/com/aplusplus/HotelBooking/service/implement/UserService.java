@@ -8,8 +8,15 @@ import com.aplusplus.HotelBooking.mapper.UserMapper;
 import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.interf.IUserService;
+import com.aplusplus.HotelBooking.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserService implements IUserService {
@@ -19,19 +26,81 @@ public class UserService implements IUserService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     @Override
     public Response register(User user) {
-        return null;
+        Response response = new Response();
+        try{
+            if(user.getRole() == null || user.getRole().isBlank()){
+                user.setRole("USER");
+            }
+
+            if(userRepository.existsByUsername(user.getUsername())){
+                throw new OurException("This username already existed, please choose another username");
+            }
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            User savedUser = userRepository.save(user);
+            UserDTO userDTO = userMapper.userToUserDTO(user);
+            response.setStatusCode(200);
+            response.setMessage("Register successfully");
+        } catch(OurException e){
+            response.setStatusCode(400);
+            response.setMessage(e.getMessage());
+        } catch(Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
     }
 
     @Override
     public Response login(LoginRequest loginRequest) {
-        return null;
+        Response response = new Response();
+        try{
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
+
+            var user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new OurException("Username not found"));
+            String jwt = jwtUtils.generateToken(user);
+            response.setStatusCode(200);
+            response.setToken(jwt);
+            response.setRole(user.getRole());
+            response.setExpirationTime("1 day");
+            response.setMessage("Login successfully");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage("Error Occurs During User Login" + e.getMessage());
+        }
+        return response;
     }
 
     @Override
-    public Response getAllUsers() {
-        return null;
+    public Response getAllCustomers() {
+        Response response = new Response();
+        try{
+            List<User> userList = userRepository.getAllCustomers();
+            List<UserDTO> userDTOList = userMapper.userListToUserDTOList(userList);
+
+            response.setStatusCode(200);
+            response.setMessage("Get all customers successfully");
+            response.setUserList(userDTOList);
+        } catch(Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
     }
 
     @Override
@@ -40,8 +109,22 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Response deleteUser(String userId) {
-        return null;
+    public Response deleteUser(String username) {
+        Response response = new Response();
+        try{
+            User user = userRepository.findByUsername(username).orElseThrow(() -> new OurException("Username not found"));
+
+            userRepository.deleteByUserName(username);
+            response.setStatusCode(200);
+            response.setMessage("Delete successfully");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
     }
 
     @Override
@@ -64,8 +147,23 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Response getMyInfo(String email) {
-        return null;
+    public Response getMyInfo(String username) {
+        Response response = new Response();
+        try{
+            User user = userRepository.findByUsername(username).orElseThrow(() -> new OurException("User not found"));
+            UserDTO userDTO = userMapper.userToUserDTO(user);
+
+            response.setStatusCode(200);
+            response.setMessage("Get information successfully");
+            response.setUser(userDTO);
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
     }
 }
 
