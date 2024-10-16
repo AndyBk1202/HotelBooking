@@ -114,7 +114,7 @@ public class UserService implements IUserService {
         try{
             User user = userRepository.findByUsername(username).orElseThrow(() -> new OurException("Username not found"));
 
-            userRepository.deleteByUserName(username);
+            userRepository.deleteByUsername(username);
             response.setStatusCode(200);
             response.setMessage("Delete successfully");
         } catch (OurException e){
