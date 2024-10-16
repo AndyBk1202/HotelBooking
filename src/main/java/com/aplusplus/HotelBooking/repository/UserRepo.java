@@ -11,7 +11,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
     Boolean existsByUsername(String username);
 
-    void deleteByUserName(String username);
+    void deleteByUsername(String username);
     @Query("SELECT u FROM User u WHERE u.role = 'USER'")
     List<User> getAllCustomers();
 }
