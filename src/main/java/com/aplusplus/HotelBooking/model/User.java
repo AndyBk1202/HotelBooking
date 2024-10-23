@@ -26,12 +26,10 @@ public class User implements UserDetails{
     private String name;
     @NotBlank(message = "Phone Number is required")
     private String phoneNumber;
-    @NotBlank(message = "Username is required")
-    private String username;
     @NotBlank(message = "Password is required")
     private String password;
     private String role;
-
+    // thêm image
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
@@ -45,7 +43,7 @@ public class User implements UserDetails{
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override

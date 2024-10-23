@@ -1,6 +1,8 @@
 package com.aplusplus.HotelBooking.controller;
 
 import com.aplusplus.HotelBooking.dto.Response;
+import com.aplusplus.HotelBooking.dto.UserDTO;
+import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.service.interf.IUserService;
 import com.aplusplus.HotelBooking.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,12 @@ public class UserController {
     @GetMapping("/get_info")
     public ResponseEntity<Response> getUserInfo(){
         Response response = userService.getMyInfo(utils.getCurrentUsername());
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PutMapping("/update-info")
+    public ResponseEntity<Response> updateUserInfo(@RequestBody UserDTO userDTO){
+        Response response = userService.updateInfo(utils.getCurrentUsername(), userDTO);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

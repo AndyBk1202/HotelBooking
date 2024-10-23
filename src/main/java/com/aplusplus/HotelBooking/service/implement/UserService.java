@@ -9,6 +9,8 @@ import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.interf.IUserService;
 import com.aplusplus.HotelBooking.utils.JwtUtils;
+import com.aplusplus.HotelBooking.utils.Utils;
+import org.mapstruct.control.MappingControl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,7 +45,7 @@ public class UserService implements IUserService {
                 user.setRole("USER");
             }
 
-            if(userRepository.existsByUsername(user.getUsername())){
+            if(userRepository.existsByEmail(user.getUsername())){
                 throw new OurException("This username already existed, please choose another username");
             }
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -69,7 +71,7 @@ public class UserService implements IUserService {
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
-            var user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new OurException("Username not found"));
+            var user = userRepository.findByEmail(loginRequest.getUsername()).orElseThrow(() -> new OurException("Username not found"));
             String jwt = jwtUtils.generateToken(user);
             response.setStatusCode(200);
             response.setToken(jwt);
@@ -112,9 +114,9 @@ public class UserService implements IUserService {
     public Response deleteUser(String username) {
         Response response = new Response();
         try{
-            User user = userRepository.findByUsername(username).orElseThrow(() -> new OurException("Username not found"));
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new OurException("Username not found"));
 
-            userRepository.deleteByUsername(username);
+            userRepository.deleteByEmail(username);
             response.setStatusCode(200);
             response.setMessage("Delete successfully");
         } catch (OurException e){
@@ -150,7 +152,7 @@ public class UserService implements IUserService {
     public Response getMyInfo(String username) {
         Response response = new Response();
         try{
-            User user = userRepository.findByUsername(username).orElseThrow(() -> new OurException("User not found"));
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new OurException("User not found"));
             UserDTO userDTO = userMapper.userToUserDTO(user);
 
             response.setStatusCode(200);
@@ -159,6 +161,27 @@ public class UserService implements IUserService {
         } catch (OurException e){
             response.setStatusCode(404);
             response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response updateInfo(String username, UserDTO userDTO) {
+        Response response = new Response();
+        try{
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new OurException("User not found"));
+            if(userDTO.getName() != null) user.setName(userDTO.getName());
+            if(userDTO.getEmail() != null) user.setEmail(userDTO.getEmail());
+            if(userDTO.getPhoneNumber() != null) user.setPhoneNumber(userDTO.getPhoneNumber());
+            userRepository.save(user);
+            response.setStatusCode(200);
+            response.setMessage("Update information successfully");
+        } catch (OurException e){
+             response.setStatusCode(404);
+             response.setMessage(e.getMessage());
         } catch (Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
