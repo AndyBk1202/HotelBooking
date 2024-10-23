@@ -3,6 +3,7 @@ package com.aplusplus.HotelBooking.model;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -19,14 +20,16 @@ public class Room {
     private String roomType;
     @NotBlank(message = "Room size is required")
     private String roomSize;
-    @NotBlank(message = "Room price is required")
+    @NotNull(message = "Room price is required")
     private Double roomPrice;
     private String roomDescription;
     private String roomStatus;
-    private String bookingCode;
+//    private String bookingCode;
     private String roomPhotoUrl;
-    @NotBlank(message = "Room capacity is required")
+    @NotNull(message = "Room capacity is required")
     private int roomCapacity;
+    @NotNull(message = "Room amount is required")
+    private int roomAmount; // số lượng phòng có sẵn
 
     @ManyToMany
     @JoinTable(
