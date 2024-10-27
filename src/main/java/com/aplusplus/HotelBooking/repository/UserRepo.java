@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepo extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
-    Boolean existsByUsername(String username);
-
-    void deleteByUsername(String username);
+    Optional<User> findByEmail(String email);
+    Boolean existsByEmail(String email);
+    void deleteByEmail(String email);
     @Query("SELECT u FROM User u WHERE u.role = 'USER'")
     List<User> getAllCustomers();
 }
