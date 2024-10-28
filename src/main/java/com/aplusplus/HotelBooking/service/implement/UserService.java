@@ -68,10 +68,10 @@ public class UserService implements IUserService {
         Response response = new Response();
         try{
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
 
-            var user = userRepository.findByEmail(loginRequest.getUsername()).orElseThrow(() -> new OurException("Username not found"));
+            var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new OurException("Username not found"));
             String jwt = jwtUtils.generateToken(user);
             response.setStatusCode(200);
             response.setToken(jwt);
