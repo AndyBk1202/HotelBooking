@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/users")
@@ -37,6 +38,12 @@ public class UserController {
     @PutMapping("/update-info")
     public ResponseEntity<Response> updateUserInfo(@RequestBody UserDTO userDTO){
         Response response = userService.updateInfo(utils.getCurrentUsername(), userDTO);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PostMapping("/upload-avatar")
+    public ResponseEntity<Response> uploadAvatar(@RequestParam(value = "image") MultipartFile image){
+        Response response = userService.uploadImage(utils.getCurrentUsername(), image);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

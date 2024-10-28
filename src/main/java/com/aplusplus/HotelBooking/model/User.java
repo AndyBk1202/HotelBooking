@@ -29,7 +29,7 @@ public class User implements UserDetails{
     @NotBlank(message = "Password is required")
     private String password;
     private String role;
-    // thêm image
+    private String imageUrl;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
