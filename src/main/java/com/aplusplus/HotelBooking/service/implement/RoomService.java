@@ -9,6 +9,8 @@ import com.aplusplus.HotelBooking.repository.RoomRepo;
 import com.aplusplus.HotelBooking.service.FirebaseStorageService;
 import com.aplusplus.HotelBooking.service.interf.IRoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,12 +46,16 @@ public class RoomService implements IRoomService {
     }
 
     @Override
-    public Response getAllRoom() {
+    public Response getAllRoom(Pageable pageable) {
         Response response = new Response();
         try{
-            List<Room> roomList = roomRepo.findAll();
-            List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
-            response.setRoomList(roomDTOList);
+//            List<Room> roomList = roomRepo.findAll();
+//            List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
+            Page<RoomDTO> roomDTOPage = roomRepo.findAll(pageable).map(roomMapper::roomToRoomDTO);
+            response.setRoomList(roomDTOPage.getContent());
+            response.setCurrentPage(roomDTOPage.getNumber());
+            response.setTotalPages(roomDTOPage.getTotalPages());
+            response.setTotalElements(roomDTOPage.getTotalElements());
             response.setStatusCode(200);
             response.setMessage("Get all rooms successfully");
         } catch (OurException e){

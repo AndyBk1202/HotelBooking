@@ -4,6 +4,8 @@ import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.RoomDTO;
 import com.aplusplus.HotelBooking.service.implement.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +26,9 @@ public class RoomController {
 
     @GetMapping("/get-all")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> getAllRoom(){
-        Response response = roomService.getAllRoom();
+    public ResponseEntity<Response> getAllRoom(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = roomService.getAllRoom(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

@@ -2,13 +2,14 @@ package com.aplusplus.HotelBooking.service.interf;
 
 import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.RoomDTO;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
 public interface IRoomService {
     Response getRoom (String roomId);
-    Response getAllRoom();
+    Response getAllRoom(Pageable pageable);
     Response addRoom (
             String roomType,
             String roomSize,

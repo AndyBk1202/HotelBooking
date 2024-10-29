@@ -13,6 +13,9 @@ import com.aplusplus.HotelBooking.utils.JwtUtils;
 import com.aplusplus.HotelBooking.utils.Utils;
 import org.mapstruct.control.MappingControl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -95,15 +98,18 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Response getAllCustomers() {
+    public Response getAllCustomers(Pageable pageable) {
         Response response = new Response();
         try{
-            List<User> userList = userRepository.getAllCustomers();
-            List<UserDTO> userDTOList = userMapper.userListToUserDTOList(userList);
-
+//            List<User> userList = userRepository.getAllCustomers();
+//            List<UserDTO> userDTOList = userMapper.userListToUserDTOList(userList);
+            Page<UserDTO> userDTOPage = userRepository.findAllCustomers(pageable).map(userMapper::userToUserDTO);
+            response.setUserList(userDTOPage.getContent());
+            response.setCurrentPage(userDTOPage.getNumber());
+            response.setTotalPages(userDTOPage.getTotalPages());
+            response.setTotalElements(userDTOPage.getTotalElements());
             response.setStatusCode(200);
             response.setMessage("Get all customers successfully");
-            response.setUserList(userDTOList);
         } catch(Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());

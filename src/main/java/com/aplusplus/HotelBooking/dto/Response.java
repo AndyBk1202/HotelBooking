@@ -39,4 +39,9 @@ public class Response {
     private List<PaymentDTO> paymentList;
 
     private List<PromotionDTO> promotionList;
+
+    //Pagination information
+    private Integer currentPage;
+    private Integer totalPages;
+    private Long totalElements;
 }
