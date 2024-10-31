@@ -10,7 +10,7 @@ public interface IBookingService {
     Response getBookingById(String bookingId);
     Response getBookingByDate(LocalDate checkInDate, LocalDate checkOutDate);
     Response getAllBooking();
-    Response getBookingByUserId(String userId);
+    Response getBookingsByUserId(Long userId);
     Response getBookingByRoomId(String roomId);
     Response updateBooking(BookingDTO request);
     Response cancelBooking(String bookingId);
