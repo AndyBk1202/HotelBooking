@@ -1,5 +1,6 @@
 package com.aplusplus.HotelBooking.controller;
 
+import com.aplusplus.HotelBooking.dto.FacilityDTO;
 import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.RoomDTO;
 import com.aplusplus.HotelBooking.service.implement.RoomService;
@@ -43,7 +44,8 @@ public class RoomController {
             @RequestParam(value = "roomStatus", required = false) String roomStatus,
             @RequestParam(value = "roomCapacity", required = true) String roomCapacity,
             @RequestParam(value = "roomAmount", required = true) String roomAmount,
-            @RequestParam(value = "file", required = false) MultipartFile roomPhoto
+            @RequestParam(value = "file", required = false) MultipartFile roomPhoto,
+            @RequestPart(value = "facility") FacilityDTO facilityDTO
     ){
         if(roomType == null || roomType.isBlank() ||
         roomSize == null || roomSize.isBlank() ||
@@ -57,7 +59,7 @@ public class RoomController {
             return ResponseEntity.status(response.getStatusCode()).body(response);
         }
 
-        Response response = roomService.addRoom(roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto);
+        Response response = roomService.addRoom(roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto, facilityDTO);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -73,9 +75,10 @@ public class RoomController {
             @RequestParam(value = "roomStatus", required = false) String roomStatus,
             @RequestParam(value = "roomCapacity", required = false) String roomCapacity,
             @RequestParam(value = "roomAmount", required = false) String roomAmount,
-            @RequestParam(value = "file", required = false) MultipartFile roomPhoto){
+            @RequestParam(value = "file", required = false) MultipartFile roomPhoto,
+            @RequestPart(value = "facility") FacilityDTO facilityDTO){
 
-        Response response = roomService.updateRoom(roomId, roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto);
+        Response response = roomService.updateRoom(roomId, roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto, facilityDTO);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

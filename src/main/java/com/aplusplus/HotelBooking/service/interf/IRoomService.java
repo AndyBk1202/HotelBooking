@@ -1,5 +1,6 @@
 package com.aplusplus.HotelBooking.service.interf;
 
+import com.aplusplus.HotelBooking.dto.FacilityDTO;
 import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.RoomDTO;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,8 @@ public interface IRoomService {
             String roomStatus,
             String roomCapacity,
             String roomAmount,
-            MultipartFile roomPhoto);
+            MultipartFile roomPhoto,
+            FacilityDTO facilityDTO);
     Response updateRoom (
             String roomId,
             String roomType,
@@ -28,7 +30,8 @@ public interface IRoomService {
             String roomStatus,
             String roomCapacity,
             String roomAmount,
-            MultipartFile roomPhoto);
+            MultipartFile roomPhoto,
+            FacilityDTO facilityDTO);
     Response deleteRoom (String roomId);
 
     Response getAvailableRoomsByDateAndType(LocalDate checkInDate, LocalDate checkoutDate, String roomType);
