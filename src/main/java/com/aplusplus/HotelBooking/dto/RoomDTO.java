@@ -17,4 +17,5 @@ public class RoomDTO {
     private String roomPhotoUrl;
     private int roomCapacity;
     private int roomAmount;
+    private FacilityDTO facility;
 }
