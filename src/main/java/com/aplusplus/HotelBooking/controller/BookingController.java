@@ -42,4 +42,23 @@ public class BookingController {
         Response response = bookingService.getBookingByDate(checkInDate, checkoutDate);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+
+    @GetMapping("/get-by-user-id/{userId}")
+    public ResponseEntity<Response> getBookingsByUserId(@PathVariable("userId") Long userId){
+        Response response = bookingService.getBookingsByUserId(userId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    // Doesn't work because createBooking doesn't have add room to booking
+    @GetMapping("/get-by-room-id/{roomId}")
+    public ResponseEntity<Response> getBookingByRoomId(@PathVariable("roomId") String roomId){
+        Response response = bookingService.getBookingByRoomId(roomId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @GetMapping("/cancel-booking/{bookingId}")
+    public ResponseEntity<Response> cancelBooking(@PathVariable("bookingId") String bookingId){
+        Response response = bookingService.cancelBooking(bookingId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }
