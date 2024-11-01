@@ -3,10 +3,18 @@ package com.aplusplus.HotelBooking.controller;
 import com.aplusplus.HotelBooking.dto.BookingDTO;
 import com.aplusplus.HotelBooking.dto.DateRequest;
 import com.aplusplus.HotelBooking.dto.Response;
+import com.aplusplus.HotelBooking.exception.OurException;
+import com.aplusplus.HotelBooking.model.Booking;
+import com.aplusplus.HotelBooking.model.User;
+import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.implement.BookingService;
 import com.aplusplus.HotelBooking.service.interf.IBookingService;
+import com.aplusplus.HotelBooking.utils.Utils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -15,17 +23,20 @@ import java.time.LocalDate;
 @RequestMapping("/bookings")
 @RequiredArgsConstructor
 public class BookingController {
-    private final IBookingService bookingService;
-
-    @PostMapping
-    public ResponseEntity<Response> createBooking(@RequestBody BookingDTO request){
-        Response response = bookingService.createBooking(request);
+    private final BookingService bookingService;
+    private final Utils utils;
+    private final UserRepo userRepo;
+    @PostMapping("create-booking/{room_id}")
+    public ResponseEntity<Response> createBooking(@PathVariable("room_id") String room_id,@RequestBody Booking request){
+        Response response = bookingService.createBooking(Long.valueOf(room_id), utils.getCurrentUsername(), request);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-all-bookings")
-    public ResponseEntity<Response> getAllBooking(){
-        Response response = bookingService.getAllBooking();
+    public ResponseEntity<Response> getAllBooking(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = bookingService.getAllBooking(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -35,30 +46,44 @@ public class BookingController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("get-by-date")
-    public ResponseEntity<Response> getBookingByDate(@RequestBody DateRequest date) {
-        LocalDate checkInDate = date.getCheckInDate();
-        LocalDate checkoutDate = date.getCheckoutDate();
-        Response response = bookingService.getBookingByDate(checkInDate, checkoutDate);
+    public ResponseEntity<Response> getBookingByDate(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate,
+                                                     @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = bookingService.getBookingsByDate(startDate, endDate, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @GetMapping("/get-by-user-id/{userId}")
-    public ResponseEntity<Response> getBookingsByUserId(@PathVariable("userId") Long userId){
-        Response response = bookingService.getBookingsByUserId(userId);
+    @PreAuthorize("hasAuthority('USER')")
+    @GetMapping("/booking-history")
+    public ResponseEntity<Response> getBookingsByUserId(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = bookingService.getBookingsByUsername(utils.getCurrentUsername(), pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    // Doesn't work because createBooking doesn't have add room to booking
-    @GetMapping("/get-by-room-id/{roomId}")
-    public ResponseEntity<Response> getBookingByRoomId(@PathVariable("roomId") String roomId){
-        Response response = bookingService.getBookingByRoomId(roomId);
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/get-by-room/{roomId}")
+    public ResponseEntity<Response> getBookingByRoomId(@PathVariable("roomId") String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = bookingService.getBookingsByRoomId(roomId, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @GetMapping("/cancel-booking/{bookingId}")
+    @PreAuthorize("hasAuthority('USER')")
+    @DeleteMapping("/cancel-booking/{bookingId}")
     public ResponseEntity<Response> cancelBooking(@PathVariable("bookingId") String bookingId){
         Response response = bookingService.cancelBooking(bookingId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @GetMapping("/recent-bookings")
+    public ResponseEntity<Response> getRecentBookings(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        LocalDate now = LocalDate.now();
+        User user = userRepo.findByEmail(utils.getCurrentUsername()).orElseThrow(() -> new OurException("Username not found"));
+        Response response = bookingService.getRecentBookings(user.getId(), now, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }

@@ -1,6 +1,7 @@
 package com.aplusplus.HotelBooking.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -20,18 +21,17 @@ public class Booking {
     @NotNull(message = "Check in date is required")
     private LocalDate checkInDate;
     @NotNull(message = "Check out date is required")
-    private LocalDate checkoutDate;
-    @NotNull(message = "Number of children is required")
+    private LocalDate checkOutDate;
+    @Min(value = 0, message = "Number of children must not be less than 0")
     private int numOfChildren;
-    @NotNull(message = "Number of adult is required")
+    @Min(value = 1, message = "Number of adults must not be less than 1")
     private int numOfAdults;
-    @NotNull(message = "Number of guests if required")
     private int totalNumOfGuest;
-    @NotBlank(message = "Number of booking code is required")
     private String bookingCode;
 
-    @ManyToMany(mappedBy = "bookings", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Room> rooms = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    private Room room;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
