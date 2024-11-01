@@ -1,9 +1,12 @@
 package com.aplusplus.HotelBooking.controller;
 
+import com.aplusplus.HotelBooking.dto.FacilityDTO;
 import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.RoomDTO;
 import com.aplusplus.HotelBooking.service.implement.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +27,9 @@ public class RoomController {
 
     @GetMapping("/get-all")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> getAllRoom(){
-        Response response = roomService.getAllRoom();
+    public ResponseEntity<Response> getAllRoom(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = roomService.getAllRoom(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -40,7 +44,8 @@ public class RoomController {
             @RequestParam(value = "roomStatus", required = false) String roomStatus,
             @RequestParam(value = "roomCapacity", required = true) String roomCapacity,
             @RequestParam(value = "roomAmount", required = true) String roomAmount,
-            @RequestParam(value = "file", required = false) MultipartFile roomPhoto
+            @RequestParam(value = "file", required = false) MultipartFile roomPhoto,
+            @RequestPart(value = "facility") FacilityDTO facilityDTO
     ){
         if(roomType == null || roomType.isBlank() ||
         roomSize == null || roomSize.isBlank() ||
@@ -54,7 +59,7 @@ public class RoomController {
             return ResponseEntity.status(response.getStatusCode()).body(response);
         }
 
-        Response response = roomService.addRoom(roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto);
+        Response response = roomService.addRoom(roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto, facilityDTO);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -70,9 +75,10 @@ public class RoomController {
             @RequestParam(value = "roomStatus", required = false) String roomStatus,
             @RequestParam(value = "roomCapacity", required = false) String roomCapacity,
             @RequestParam(value = "roomAmount", required = false) String roomAmount,
-            @RequestParam(value = "file", required = false) MultipartFile roomPhoto){
+            @RequestParam(value = "file", required = false) MultipartFile roomPhoto,
+            @RequestPart(value = "facility") FacilityDTO facilityDTO){
 
-        Response response = roomService.updateRoom(roomId, roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto);
+        Response response = roomService.updateRoom(roomId, roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto, facilityDTO);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

@@ -45,4 +45,8 @@ public class Room {
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Review> review;
+
+    @OneToOne
+    @JoinColumn(name = "facility_id", referencedColumnName = "id")
+    private Facility facility;
 }

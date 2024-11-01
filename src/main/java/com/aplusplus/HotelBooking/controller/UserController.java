@@ -6,11 +6,14 @@ import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.service.interf.IUserService;
 import com.aplusplus.HotelBooking.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/users")
@@ -40,10 +43,17 @@ public class UserController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+    @PostMapping("/upload-avatar")
+    public ResponseEntity<Response> uploadAvatar(@RequestParam(value = "image") MultipartFile image){
+        Response response = userService.uploadImage(utils.getCurrentUsername(), image);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/get_all_customers")
-    public ResponseEntity<Response> getAllCustomers(){
-        Response response = userService.getAllCustomers();
+    @GetMapping("/get-all-customers")
+    public ResponseEntity<Response> getAllCustomers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = userService.getAllCustomers(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }

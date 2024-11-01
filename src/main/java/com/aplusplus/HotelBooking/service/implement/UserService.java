@@ -7,16 +7,22 @@ import com.aplusplus.HotelBooking.exception.OurException;
 import com.aplusplus.HotelBooking.mapper.UserMapper;
 import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.UserRepo;
+import com.aplusplus.HotelBooking.service.FirebaseStorageService;
 import com.aplusplus.HotelBooking.service.interf.IUserService;
 import com.aplusplus.HotelBooking.utils.JwtUtils;
 import com.aplusplus.HotelBooking.utils.Utils;
 import org.mapstruct.control.MappingControl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -36,6 +42,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private FirebaseStorageService firebaseStorageService;
 
     @Override
     public Response register(User user) {
@@ -89,15 +98,18 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Response getAllCustomers() {
+    public Response getAllCustomers(Pageable pageable) {
         Response response = new Response();
         try{
-            List<User> userList = userRepository.getAllCustomers();
-            List<UserDTO> userDTOList = userMapper.userListToUserDTOList(userList);
-
+//            List<User> userList = userRepository.getAllCustomers();
+//            List<UserDTO> userDTOList = userMapper.userListToUserDTOList(userList);
+            Page<UserDTO> userDTOPage = userRepository.findAllCustomers(pageable).map(userMapper::userToUserDTO);
+            response.setUserList(userDTOPage.getContent());
+            response.setCurrentPage(userDTOPage.getNumber());
+            response.setTotalPages(userDTOPage.getTotalPages());
+            response.setTotalElements(userDTOPage.getTotalElements());
             response.setStatusCode(200);
             response.setMessage("Get all customers successfully");
-            response.setUserList(userDTOList);
         } catch(Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
@@ -188,5 +200,29 @@ public class UserService implements IUserService {
         }
         return response;
     }
+
+    @Override
+    public Response uploadImage(String username, MultipartFile image) {
+        Response response = new Response();
+        try{
+            User user = userRepository.findByEmail(username).orElseThrow(() -> new OurException("User not found"));
+            if(image != null){
+                String fileUrl = firebaseStorageService.uploadFile(image);
+                user.setImageUrl(fileUrl);
+            }
+            userRepository.save(user);
+            response.setStatusCode(200);
+            response.setMessage("Upload avatar successfully");
+        } catch(OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch(Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+
 }
 
