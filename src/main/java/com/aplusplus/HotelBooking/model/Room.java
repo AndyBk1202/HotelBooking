@@ -31,12 +31,7 @@ public class Room {
     @NotNull(message = "Room amount is required")
     private int roomAmount; // số lượng phòng có sẵn
 
-    @ManyToMany
-    @JoinTable(
-            name = "room_booking",
-            joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "booking_id")
-    )
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

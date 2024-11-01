@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RoomDTO {
-    private Long id;
     private String roomType;
     private String roomSize;
     private Double roomPrice;
@@ -18,4 +17,6 @@ public class RoomDTO {
     private int roomCapacity;
     private int roomAmount;
     private FacilityDTO facility;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private int remain;
 }

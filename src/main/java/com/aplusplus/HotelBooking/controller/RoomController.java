@@ -3,6 +3,8 @@ package com.aplusplus.HotelBooking.controller;
 import com.aplusplus.HotelBooking.dto.FacilityDTO;
 import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.RoomDTO;
+import com.aplusplus.HotelBooking.model.Facility;
+import com.aplusplus.HotelBooking.model.Room;
 import com.aplusplus.HotelBooking.service.implement.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -37,29 +39,11 @@ public class RoomController {
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Response> addRoom(
-            @RequestParam(value = "roomType", required = true) String roomType,
-            @RequestParam(value = "roomSize", required = true) String roomSize,
-            @RequestParam(value = "roomPrice", required = true) String roomPrice,
-            @RequestParam(value = "roomDescription", required = false) String roomDescription,
-            @RequestParam(value = "roomStatus", required = false) String roomStatus,
-            @RequestParam(value = "roomCapacity", required = true) String roomCapacity,
-            @RequestParam(value = "roomAmount", required = true) String roomAmount,
+            @RequestPart(value = "room") Room room,
             @RequestParam(value = "file", required = false) MultipartFile roomPhoto,
-            @RequestPart(value = "facility") FacilityDTO facilityDTO
+            @RequestPart(value = "facility") Facility facility
     ){
-        if(roomType == null || roomType.isBlank() ||
-        roomSize == null || roomSize.isBlank() ||
-        roomPrice == null || roomPrice.isBlank() ||
-        roomCapacity == null || roomCapacity.isBlank() ||
-        roomAmount == null || roomAmount.isBlank() ||
-        roomPhoto == null || roomPhoto.isEmpty()){
-            Response response = new Response();
-            response.setStatusCode(400);
-            response.setMessage("Please provide value for all fields(roomType, roomSize, roomPrice, roomCapacity, roomAmount, file)");
-            return ResponseEntity.status(response.getStatusCode()).body(response);
-        }
-
-        Response response = roomService.addRoom(roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto, facilityDTO);
+        Response response = roomService.addRoom(room, roomPhoto, facility);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -68,17 +52,11 @@ public class RoomController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Response> updateRoom(
             @PathVariable("id") String roomId,
-            @RequestParam(value = "roomType", required = false) String roomType,
-            @RequestParam(value = "roomSize", required = false) String roomSize,
-            @RequestParam(value = "roomPrice", required = false) String roomPrice,
-            @RequestParam(value = "roomDescription", required = false) String roomDescription,
-            @RequestParam(value = "roomStatus", required = false) String roomStatus,
-            @RequestParam(value = "roomCapacity", required = false) String roomCapacity,
-            @RequestParam(value = "roomAmount", required = false) String roomAmount,
+            @RequestPart(value = "room") Room room,
             @RequestParam(value = "file", required = false) MultipartFile roomPhoto,
-            @RequestPart(value = "facility") FacilityDTO facilityDTO){
+            @RequestPart(value = "facility") Facility facility){
 
-        Response response = roomService.updateRoom(roomId, roomType, roomSize, roomPrice, roomDescription, roomStatus, roomCapacity, roomAmount, roomPhoto, facilityDTO);
+        Response response = roomService.updateRoom(Long.valueOf(roomId), room, roomPhoto, facility);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
