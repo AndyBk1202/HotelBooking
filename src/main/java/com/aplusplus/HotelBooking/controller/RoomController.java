@@ -29,7 +29,7 @@ public class RoomController {
 
     @GetMapping("/get-all")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> getAllRoom(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+    public ResponseEntity<Response> getAllRoom(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = roomService.getAllRoom(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
