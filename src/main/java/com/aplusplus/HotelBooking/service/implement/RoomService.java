@@ -6,6 +6,7 @@ import com.aplusplus.HotelBooking.dto.RoomDTO;
 import com.aplusplus.HotelBooking.exception.OurException;
 import com.aplusplus.HotelBooking.mapper.FacilityMapper;
 import com.aplusplus.HotelBooking.mapper.RoomMapper;
+import com.aplusplus.HotelBooking.model.Booking;
 import com.aplusplus.HotelBooking.model.Facility;
 import com.aplusplus.HotelBooking.model.Room;
 import com.aplusplus.HotelBooking.repository.FacilityRepo;
@@ -18,7 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.print.Book;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -78,31 +81,15 @@ public class RoomService implements IRoomService {
 
     @Override
     public Response addRoom(
-            String roomType,
-            String roomSize,
-            String roomPrice,
-            String roomDescription,
-            String roomStatus,
-            String roomCapacity,
-            String roomAmount,
+            Room newRoom,
             MultipartFile roomPhoto,
-            FacilityDTO facilityDTO) {
+            Facility facility) {
         Response response = new Response();
         try{
-            Room newRoom = new Room();
-            newRoom.setRoomType(roomType);
-            newRoom.setRoomSize(roomSize);
-            newRoom.setRoomPrice(Double.valueOf(roomPrice));
-            if(roomDescription != null) newRoom.setRoomDescription(roomDescription);
-            if(roomStatus != null) newRoom.setRoomStatus(roomStatus);
-            newRoom.setRoomCapacity(Integer.parseInt(roomCapacity));
-            newRoom.setRoomAmount(Integer.parseInt(roomAmount));
-
             if(roomPhoto != null){
                 String fileUrl = firebaseStorageService.uploadFile(roomPhoto);
                 newRoom.setRoomPhotoUrl(fileUrl);
             }
-            Facility facility = facilityMapper.facilityDTOToFacility(facilityDTO);
             facilityRepo.save(facility);
             newRoom.setFacility(facility);
             roomRepo.save(newRoom);
@@ -117,45 +104,38 @@ public class RoomService implements IRoomService {
 
     @Override
     public Response updateRoom(
-            String roomId,
-            String roomType,
-            String roomSize,
-            String roomPrice,
-            String roomDescription,
-            String roomStatus,
-            String roomCapacity,
-            String roomAmount,
+            Long roomId,
+            Room updatedRoom,
             MultipartFile roomPhoto,
-            FacilityDTO facilityDTO) {
+            Facility facility) {
         Response response = new Response();
         try{
-            Room room = roomRepo.findById(Long.valueOf(roomId)).orElseThrow(() -> new OurException("Room not found"));
+            Room room = roomRepo.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
 
-
-            if(roomType != null && !roomType.isBlank()) room.setRoomType(roomType);
-            if(roomSize != null && !roomSize.isBlank()) room.setRoomSize(roomSize);
-            if(roomPrice != null && !roomPrice.isBlank()) room.setRoomPrice(Double.valueOf(roomPrice));
-            if(roomDescription != null && !roomDescription.isBlank()) room.setRoomDescription(roomDescription);
-            if(roomStatus != null && !roomStatus.isBlank()) room.setRoomStatus(roomStatus);
-            if(roomCapacity != null && !roomCapacity.isBlank()) room.setRoomCapacity(Integer.parseInt(roomCapacity));
-            if(roomAmount != null && !roomAmount.isBlank()) room.setRoomAmount(Integer.parseInt(roomAmount));
+            room.setRoomType(updatedRoom.getRoomType());
+            room.setRoomSize(updatedRoom.getRoomSize());
+            room.setRoomPrice(updatedRoom.getRoomPrice());
+            room.setRoomDescription(updatedRoom.getRoomDescription());
+            room.setRoomStatus(updatedRoom.getRoomStatus());
+            room.setRoomCapacity(updatedRoom.getRoomCapacity());
+            room.setRoomAmount(updatedRoom.getRoomAmount());
 
             if(roomPhoto != null){
                 String fileUrl = firebaseStorageService.uploadFile(roomPhoto);
                 room.setRoomPhotoUrl(fileUrl);
             }
 
-            Facility facility = facilityRepo.findByRoom(room);
-            facility.setGymInfo(facilityDTO.getGymInfo());
-            facility.setBathInfo(facilityDTO.getBathInfo());
-            facility.setDrinkInfo(facilityDTO.getDrinkInfo());
-            facility.setCoffeeInfo(facilityDTO.getCoffeeInfo());
-            facility.setBreakfastInfo(facilityDTO.getBreakfastInfo());
-            facility.setParkingInfo(facilityDTO.getParkingInfo());
-            facility.setWifiInfo(facilityDTO.getWifiInfo());
-            facility.setPoolInfo(facilityDTO.getPoolInfo());
-            facilityRepo.save(facility);
-            room.setFacility(facility);
+            Facility existedFacility = facilityRepo.findByRoom(room);
+            existedFacility.setGymInfo(facility.getGymInfo());
+            existedFacility.setBathInfo(facility.getBathInfo());
+            existedFacility.setDrinkInfo(facility.getDrinkInfo());
+            existedFacility.setCoffeeInfo(facility.getCoffeeInfo());
+            existedFacility.setBreakfastInfo(facility.getBreakfastInfo());
+            existedFacility.setParkingInfo(facility.getParkingInfo());
+            existedFacility.setWifiInfo(facility.getWifiInfo());
+            existedFacility.setPoolInfo(facility.getPoolInfo());
+            facilityRepo.save(existedFacility);
+            room.setFacility(existedFacility);
             roomRepo.save(room);
             response.setStatusCode(200);
             response.setMessage("Update room successfully");
@@ -195,5 +175,55 @@ public class RoomService implements IRoomService {
     @Override
     public Response getAllAvailableRooms() {
         return null;
+    }
+
+    @Override
+    public Response getAvailableRoomsByDate(LocalDate checkInDate, LocalDate checkoutDate) {
+        Response response = new Response();
+        try{
+            List<Room> roomList = roomRepo.findAll();
+            List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
+            // Count existed booking conflict to this date range and show remaining room amount
+            for(int i = 0; i < roomList.size(); i++){
+                List<Booking> roomBooking = roomList.get(i).getBookings();
+                int count = 0;
+                for (Booking booking : roomBooking) {
+                    if (!checkAvailable(checkInDate, checkoutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
+                        count++;
+                }
+                roomDTOList.get(i).setRoomAmount(roomDTOList.get(i).getRoomAmount() - count);
+            }
+            response.setRoomList(roomDTOList);
+            response.setStatusCode(200);
+            response.setMessage("Get all available rooms by date successfully");
+        } catch(Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response getAvailableRoomsByDateAndTypeAndAmount(LocalDate checkInDate, LocalDate checkOutDate, String roomType, int amount) {
+        return null;
+    }
+
+    // Check conflict in check in date and check out date
+    public boolean checkAvailable(LocalDate checkInDate, LocalDate checkOutDate, LocalDate existedCheckInDate, LocalDate existedCheckOutDate){
+        return (
+                checkInDate.equals(existedCheckInDate)
+                || checkInDate.isBefore(existedCheckInDate) && checkOutDate.isAfter(existedCheckInDate)
+                || checkInDate.isAfter(existedCheckInDate) && checkInDate.isBefore(existedCheckOutDate)
+                );
+    }
+
+    public int remainingRoomAmount(Room room, LocalDate checkInDate, LocalDate checkOutDate){
+        List<Booking> bookingList = room.getBookings();
+        int count = 0;
+        for(Booking booking : bookingList){
+            if(!checkAvailable(checkInDate, checkOutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
+                count++;
+        }
+        return room.getRoomAmount() - count;
     }
 }

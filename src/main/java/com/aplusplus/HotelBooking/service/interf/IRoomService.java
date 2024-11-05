@@ -3,6 +3,9 @@ package com.aplusplus.HotelBooking.service.interf;
 import com.aplusplus.HotelBooking.dto.FacilityDTO;
 import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.RoomDTO;
+import com.aplusplus.HotelBooking.model.Facility;
+import com.aplusplus.HotelBooking.model.Room;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,29 +15,21 @@ public interface IRoomService {
     Response getRoom (String roomId);
     Response getAllRoom(Pageable pageable);
     Response addRoom (
-            String roomType,
-            String roomSize,
-            String roomPrice,
-            String roomDescription,
-            String roomStatus,
-            String roomCapacity,
-            String roomAmount,
+            Room newRoom,
             MultipartFile roomPhoto,
-            FacilityDTO facilityDTO);
+            Facility facility);
     Response updateRoom (
-            String roomId,
-            String roomType,
-            String roomSize,
-            String roomPrice,
-            String roomDescription,
-            String roomStatus,
-            String roomCapacity,
-            String roomAmount,
+            Long roomId,
+            Room updatedRoom,
             MultipartFile roomPhoto,
-            FacilityDTO facilityDTO);
+            Facility facility);
     Response deleteRoom (String roomId);
 
     Response getAvailableRoomsByDateAndType(LocalDate checkInDate, LocalDate checkoutDate, String roomType);
 
     Response getAllAvailableRooms();
+
+    Response getAvailableRoomsByDate(LocalDate checkInDate, LocalDate checkoutDate);
+
+    Response getAvailableRoomsByDateAndTypeAndAmount(LocalDate checkInDate, LocalDate checkOutDate, String roomType, int amount);
 }

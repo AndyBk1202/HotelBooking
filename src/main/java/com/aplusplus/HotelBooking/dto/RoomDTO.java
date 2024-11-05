@@ -18,4 +18,6 @@ public class RoomDTO {
     private int roomCapacity;
     private int roomAmount;
     private FacilityDTO facility;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private int remain;
 }

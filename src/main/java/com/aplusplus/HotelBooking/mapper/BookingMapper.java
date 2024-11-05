@@ -10,4 +10,5 @@ import java.util.List;
 public abstract class BookingMapper {
     public abstract BookingDTO toBookingDTO(Booking booking);
     public abstract Booking toBooking(BookingDTO bookingDTO);
+    public abstract List<BookingDTO> toBookingDTOList(List<Booking> bookingList);
 }

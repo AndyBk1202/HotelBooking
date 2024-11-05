@@ -2,12 +2,21 @@ package com.aplusplus.HotelBooking.service.implement;
 
 import com.aplusplus.HotelBooking.dto.BookingDTO;
 import com.aplusplus.HotelBooking.dto.Response;
+import com.aplusplus.HotelBooking.dto.RoomDTO;
 import com.aplusplus.HotelBooking.exception.OurException;
 import com.aplusplus.HotelBooking.mapper.BookingMapper;
+import com.aplusplus.HotelBooking.model.Booking;
+import com.aplusplus.HotelBooking.model.Room;
 import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.BookingRepo;
+import com.aplusplus.HotelBooking.repository.RoomRepo;
+import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.interf.IBookingService;
+import com.aplusplus.HotelBooking.utils.Utils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,16 +27,39 @@ import java.util.List;
 public class BookingService implements IBookingService {
     private final BookingRepo bookingRepository;
     private final BookingMapper bookingMapper;
-
+    private final UserRepo userRepo;
+    private final RoomRepo roomRepo;
+    private final RoomService roomService;
+    private final Utils utils;
     @Override
-    public Response createBooking(BookingDTO request) {
+    public Response createBooking(Long roomId, String username, Booking bookingRequest) {
         Response response = new Response();
         try{
-            var booking = bookingMapper.toBooking(request);
-            bookingRepository.save(booking);
+            // Check legal for check out date and check in date
+            if(bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())){
+                throw new IllegalArgumentException("Check out date must come after check in date");
+            }
+            //Get room, user belong to booking
+            String email = utils.getCurrentUsername();
+            Room room = roomRepo.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
+            User user = userRepo.findByEmail(email).orElseThrow(() -> new OurException("User not found"));
 
+            // Check if there are remaining rooms or not
+            if(roomService.remainingRoomAmount(room, bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate()) == 0){
+                throw new OurException("No available room for selected date range");
+            }
+
+            bookingRequest.setRoom(room);
+            bookingRequest.setUser(user);
+            String bookingCode = utils.generateRandomConfirmationCode(10);
+            bookingRequest.setBookingCode(bookingCode);
+            bookingRepository.save(bookingRequest);
             response.setStatusCode(200);
-            response.setMessage("Create booking successfully");
+            response.setMessage("Booking room successfully");
+            response.setBookingCode(bookingCode);
+        } catch (OurException e){
+          response.setStatusCode(404);
+          response.setMessage(e.getMessage());
         } catch (Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
@@ -56,13 +88,60 @@ public class BookingService implements IBookingService {
     }
 
     @Override
-    public Response getBookingByDate(LocalDate checkInDate, LocalDate checkOutDate) {
+    //For admin to see all bookings of customers in a range of date
+    public Response getBookingsByDate(LocalDate startDate, LocalDate endDate, Pageable pageable) {
         Response response = new Response();
         try{
-            var booking = bookingRepository.findByCheckInDateAndCheckoutDate(checkInDate, checkOutDate).orElseThrow(() -> new OurException("Booking not found"));
-            BookingDTO bookingDTO = bookingMapper.toBookingDTO(booking);
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingByDate(startDate, endDate, pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
 
-            response.setBooking(bookingDTO);
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
+            response.setStatusCode(200);
+            response.setMessage("Successful");
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response getAllBooking(Pageable pageable) {
+        Response response = new Response();
+        try{
+            Page<BookingDTO> bookingDTOPage = bookingRepository.findAll(pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
+            response.setStatusCode(200);
+            response.setMessage("Find all booking information successfully");
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    // Get booking history of user
+    public Response getBookingsByUsername(String username, Pageable pageable) {
+        Response response = new Response();
+        try{
+
+            User user = userRepo.findByEmail(username).orElseThrow(() -> new OurException("User not found"));
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsByUser(user.getId(), pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
             response.setStatusCode(200);
             response.setMessage("Find booking information successfully");
         } catch (OurException e){
@@ -76,29 +155,30 @@ public class BookingService implements IBookingService {
     }
 
     @Override
-    public Response getAllBooking() {
+    // For admin: Get all current bookings of room
+    public Response getBookingsByRoomId(String roomId, Pageable pageable) {
         Response response = new Response();
+
         try{
-            List<BookingDTO> bookingDTOList = bookingRepository.findAll().stream().map(bookingMapper::toBookingDTO).toList();
+            LocalDate now = LocalDate.now();
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsByRoom(Long.valueOf(roomId), now, pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
 
             response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
             response.setStatusCode(200);
-            response.setMessage("Find all booking information successfully");
+            response.setMessage("Successful");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
         } catch (Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
         }
+
         return response;
-    }
-
-    @Override
-    public Response getBookingByUserId(String userId) {
-        return null;
-    }
-
-    @Override
-    public Response getBookingByRoomId(String roomId) {
-        return null;
     }
 
     @Override
@@ -108,6 +188,43 @@ public class BookingService implements IBookingService {
 
     @Override
     public Response cancelBooking(String bookingId) {
-        return null;
+        // TODO code to cancel booking (delete booking)
+        Response response = new Response();
+        try{
+            var booking = bookingRepository.findById(Long.parseLong(bookingId)).orElseThrow(() -> new OurException("Booking not found"));
+            bookingRepository.delete(booking);
+
+            response.setStatusCode(200);
+            response.setMessage("Cancel booking successfully");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+
+        return response;
     }
+
+    @Override
+    public Response getRecentBookings(Long userId, LocalDate now, Pageable pageable) {
+        Response response = new Response();
+        try{
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getRecentBookings(userId, now, pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
+            response.setStatusCode(200);
+            response.setMessage("Successful");
+        } catch(Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
 }

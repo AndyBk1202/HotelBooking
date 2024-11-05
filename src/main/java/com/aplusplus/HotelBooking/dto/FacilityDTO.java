@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FacilityDTO {
+    private Long id;
     private Boolean drinkInfo;
     private Boolean gymInfo;
     private Boolean breakfastInfo;
