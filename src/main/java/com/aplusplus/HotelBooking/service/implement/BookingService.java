@@ -11,6 +11,7 @@ import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.BookingRepo;
 import com.aplusplus.HotelBooking.repository.RoomRepo;
 import com.aplusplus.HotelBooking.repository.UserRepo;
+import com.aplusplus.HotelBooking.service.EmailService;
 import com.aplusplus.HotelBooking.service.interf.IBookingService;
 import com.aplusplus.HotelBooking.utils.Utils;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class BookingService implements IBookingService {
     private final RoomRepo roomRepo;
     private final RoomService roomService;
     private final Utils utils;
+    private final EmailService emailService;
     @Override
     public Response createBooking(Long roomId, String username, Booking bookingRequest) {
         Response response = new Response();
@@ -58,6 +60,9 @@ public class BookingService implements IBookingService {
             response.setStatusCode(200);
             response.setMessage("Booking room successfully");
             response.setBookingCode(bookingCode);
+
+            //Send email to user
+            emailService.sendBookingConfirmationEmail(bookingRequest);
         } catch (OurException e){
           response.setStatusCode(404);
           response.setMessage(e.getMessage());
