@@ -25,11 +25,6 @@ public interface IRoomService {
             Facility facility);
     Response deleteRoom (String roomId);
 
-    Response getAvailableRoomsByDateAndType(LocalDate checkInDate, LocalDate checkoutDate, String roomType);
+    Response getAvailableRoomsByDateAndNumOfGuest(LocalDate checkInDate, LocalDate checkoutDate, int numOfGuest, Pageable pageable);
 
-    Response getAllAvailableRooms();
-
-    Response getAvailableRoomsByDate(LocalDate checkInDate, LocalDate checkoutDate);
-
-    Response getAvailableRoomsByDateAndTypeAndAmount(LocalDate checkInDate, LocalDate checkOutDate, String roomType, int amount);
 }

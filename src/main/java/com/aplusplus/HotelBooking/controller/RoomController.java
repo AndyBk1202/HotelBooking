@@ -1,8 +1,6 @@
 package com.aplusplus.HotelBooking.controller;
 
-import com.aplusplus.HotelBooking.dto.FacilityDTO;
 import com.aplusplus.HotelBooking.dto.Response;
-import com.aplusplus.HotelBooking.dto.RoomDTO;
 import com.aplusplus.HotelBooking.model.Facility;
 import com.aplusplus.HotelBooking.model.Room;
 import com.aplusplus.HotelBooking.service.implement.RoomService;
@@ -13,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/rooms")
@@ -65,6 +65,17 @@ public class RoomController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Response> deleteRoom(@PathVariable("id") String id){
         Response response = roomService.deleteRoom(id);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @GetMapping("/get-available-rooms")
+    public ResponseEntity<Response> getAvailableRooms(@RequestParam LocalDate checkInDate,
+                                                      @RequestParam LocalDate checkOutDate,
+                                                      @RequestParam(defaultValue = "2") int totalGuest,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "5") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = roomService.getAvailableRoomsByDateAndNumOfGuest(checkInDate, checkOutDate, totalGuest, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }
