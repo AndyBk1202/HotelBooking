@@ -28,6 +28,8 @@ public class Response {
 
     private PaymentDTO payment;
 
+    private ReviewDTO review;
+
     private PromotionDTO promotion;
 
     private List<UserDTO> userList;
@@ -37,6 +39,8 @@ public class Response {
     private List<BookingDTO> bookingList;
 
     private List<PaymentDTO> paymentList;
+
+    private List<ReviewDTO> reviewList;
 
     private List<PromotionDTO> promotionList;
 

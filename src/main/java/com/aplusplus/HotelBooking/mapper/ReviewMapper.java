@@ -1,14 +1,12 @@
 package com.aplusplus.HotelBooking.mapper;
 
-import com.aplusplus.HotelBooking.dto.BookingDTO;
-import com.aplusplus.HotelBooking.model.Booking;
+import com.aplusplus.HotelBooking.dto.ReviewDTO;
+import com.aplusplus.HotelBooking.model.Review;
 import org.mapstruct.Mapper;
 
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public abstract class ReviewMapper {
-    public abstract BookingDTO toBookingDTO(Booking booking);
-    public abstract Booking toBooking(BookingDTO bookingDTO);
-    public abstract List<BookingDTO> toBookingDTOList(List<Booking> bookingList);
+    public abstract ReviewDTO toReviewDTO(Review review);
+    public abstract Review toReview(ReviewDTO reviewDTO);
 }
