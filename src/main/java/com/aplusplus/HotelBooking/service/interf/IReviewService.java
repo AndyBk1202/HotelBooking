@@ -6,8 +6,8 @@ import com.aplusplus.HotelBooking.dto.ReviewDTO;
 public interface IReviewService {
     Response createReview(ReviewDTO review);
     Response getReviewById(String reviewId);
-    Response getAllReview();
-    Response getReviewByUserId(String userId);
+    Response getAllReview(); // not necessary
+    Response getReviewByUserId(String userId); // thêm roomId
     Response getReviewByRoomId(String roomId);
     Response updateReview(ReviewDTO review);
     Response deleteReview(String reviewId);

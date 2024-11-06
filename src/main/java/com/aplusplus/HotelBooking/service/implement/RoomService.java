@@ -23,6 +23,7 @@ import java.awt.print.Book;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomService implements IRoomService {
@@ -168,32 +169,27 @@ public class RoomService implements IRoomService {
     }
 
     @Override
-    public Response getAvailableRoomsByDateAndType(LocalDate checkInDate, LocalDate checkoutDate, String roomType) {
-        return null;
-    }
-
-    @Override
-    public Response getAllAvailableRooms() {
-        return null;
-    }
-
-    @Override
-    public Response getAvailableRoomsByDate(LocalDate checkInDate, LocalDate checkoutDate) {
+    public Response getAvailableRoomsByDateAndNumOfGuest(LocalDate checkInDate, LocalDate checkoutDate, int numOfGuest, Pageable pageable) {
         Response response = new Response();
         try{
-            List<Room> roomList = roomRepo.findAll();
+            Page<Room> roomPage = roomRepo.findByDateAndNumOfGuest(checkInDate,checkoutDate,numOfGuest, pageable);
+            List<Room> roomList = roomPage.getContent();
             List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
             // Count existed booking conflict to this date range and show remaining room amount
             for(int i = 0; i < roomList.size(); i++){
                 List<Booking> roomBooking = roomList.get(i).getBookings();
-                int count = 0;
+                int count = 0; // Num of bookings that conflict with recent booking
                 for (Booking booking : roomBooking) {
-                    if (!checkAvailable(checkInDate, checkoutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
+                    if (checkAvailable(checkInDate, checkoutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
                         count++;
                 }
-                roomDTOList.get(i).setRoomAmount(roomDTOList.get(i).getRoomAmount() - count);
+                roomDTOList.get(i).setRemain(roomDTOList.get(i).getRoomAmount() - count);
+                roomDTOList.get(i).setRoomStatus("Còn " + roomDTOList.get(i).getRemain() + " phòng trống");
             }
             response.setRoomList(roomDTOList);
+            response.setCurrentPage(roomPage.getNumber());
+            response.setTotalPages(roomPage.getTotalPages());
+            response.setTotalElements(roomPage.getTotalElements());
             response.setStatusCode(200);
             response.setMessage("Get all available rooms by date successfully");
         } catch(Exception e){
@@ -201,11 +197,6 @@ public class RoomService implements IRoomService {
             response.setMessage(e.getMessage());
         }
         return response;
-    }
-
-    @Override
-    public Response getAvailableRoomsByDateAndTypeAndAmount(LocalDate checkInDate, LocalDate checkOutDate, String roomType, int amount) {
-        return null;
     }
 
     // Check conflict in check in date and check out date
@@ -221,7 +212,7 @@ public class RoomService implements IRoomService {
         List<Booking> bookingList = room.getBookings();
         int count = 0;
         for(Booking booking : bookingList){
-            if(!checkAvailable(checkInDate, checkOutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
+            if(checkAvailable(checkInDate, checkOutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
                 count++;
         }
         return room.getRoomAmount() - count;
