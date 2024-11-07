@@ -4,6 +4,7 @@ import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.model.Facility;
 import com.aplusplus.HotelBooking.model.Room;
 import com.aplusplus.HotelBooking.service.implement.RoomService;
+import com.google.firebase.database.core.Repo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,7 @@ public class RoomController {
 
 
     @GetMapping("/get-all")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    //@PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Response> getAllRoom(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = roomService.getAllRoom(pageable);
@@ -76,6 +77,16 @@ public class RoomController {
                                                       @RequestParam(defaultValue = "5") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = roomService.getAvailableRoomsByDateAndNumOfGuest(checkInDate, checkOutDate, totalGuest, pageable);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @GetMapping("/check-available/{roomId}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Response> checkAvailable(@RequestParam LocalDate checkInDate,
+                                                   @RequestParam LocalDate checkOutDate,
+                                                   @RequestParam(defaultValue = "2") int totalGuest,
+                                                   @PathVariable(value = "roomId") String roomId){
+        Response response = roomService.checkAvailable(checkInDate, checkOutDate, totalGuest, Long.valueOf(roomId));
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }
