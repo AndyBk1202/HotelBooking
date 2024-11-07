@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 @Service
 public class JwtUtils {
-    private static final long EXPIRATION_TIME = 1000 * 60 * 24;
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
     private final SecretKey key;
 
     public JwtUtils(){
