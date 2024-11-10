@@ -180,7 +180,7 @@ public class RoomService implements IRoomService {
                 List<Booking> roomBooking = roomList.get(i).getBookings();
                 int count = 0; // Num of bookings that conflict with recent booking
                 for (Booking booking : roomBooking) {
-                    if (checkAvailable(checkInDate, checkoutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
+                    if (checkConflict(checkInDate, checkoutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
                         count++;
                 }
                 roomDTOList.get(i).setRemain(roomDTOList.get(i).getRoomAmount() - count);
@@ -199,8 +199,39 @@ public class RoomService implements IRoomService {
         return response;
     }
 
+    @Override
+    public Response checkAvailable(LocalDate checkInDate, LocalDate checkOutDate, int totalGuest, Long roomId) {
+        Response response = new Response();
+        try{
+            Room room = roomRepo.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
+            RoomDTO roomDTO = roomMapper.roomToRoomDTO(room);
+            if(room.getRoomCapacity() < totalGuest) throw new OurException("Sức chứa của phòng không đủ đáp ứng nhu cầu của bạn, vui lòng chọn loại phòng khác lớn hơn!");
+
+            List<Booking> bookingList = room.getBookings();
+            int count = 0; // Use for count num of conflicted bookings
+            for(Booking booking : bookingList){
+                if(checkConflict(checkInDate, checkOutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
+                    count++;
+            }
+            roomDTO.setRemain(room.getRoomAmount() - count);
+            if(roomDTO.getRemain() == 0) throw  new OurException("Không còn phòng trống cho loại phòng này, vui lòng chọn phòng khác!");
+            roomDTO.setRoomStatus("Còn " + roomDTO.getRemain() + " phòng trống");
+
+            response.setRoom(roomDTO);
+            response.setStatusCode(200);
+            response.setMessage("Get available room successfully");
+        } catch(OurException e){
+            response.setStatusCode(400);
+            response.setMessage(e.getMessage());
+        }  catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
     // Check conflict in check in date and check out date
-    public boolean checkAvailable(LocalDate checkInDate, LocalDate checkOutDate, LocalDate existedCheckInDate, LocalDate existedCheckOutDate){
+    public boolean checkConflict(LocalDate checkInDate, LocalDate checkOutDate, LocalDate existedCheckInDate, LocalDate existedCheckOutDate){
         return (
                 checkInDate.equals(existedCheckInDate)
                 || checkInDate.isBefore(existedCheckInDate) && checkOutDate.isAfter(existedCheckInDate)
@@ -212,7 +243,7 @@ public class RoomService implements IRoomService {
         List<Booking> bookingList = room.getBookings();
         int count = 0;
         for(Booking booking : bookingList){
-            if(checkAvailable(checkInDate, checkOutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
+            if(checkConflict(checkInDate, checkOutDate, booking.getCheckInDate(), booking.getCheckOutDate()))
                 count++;
         }
         return room.getRoomAmount() - count;
