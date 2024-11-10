@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,6 +26,7 @@ public class ReviewService implements IReviewService {
         Response response = new Response();
         try{
             var review = reviewMapper.toReview(reviewRequest);
+            review.setCreatedTime(LocalDateTime.now());
             reviewRepository.save(review);
             response.setStatusCode(200);
             response.setMessage("Create review successfully");
@@ -112,6 +114,7 @@ public class ReviewService implements IReviewService {
             var review = reviewRepository.findById(Long.parseLong(reviewId)).orElseThrow(() -> new OurException("Review not found"));
             review.setReviewRate(reviewRequest.getReviewRate());
             review.setComment(reviewRequest.getComment());
+            review.setCreatedTime(LocalDateTime.now());
             reviewRepository.save(review);
 
             response.setStatusCode(200);

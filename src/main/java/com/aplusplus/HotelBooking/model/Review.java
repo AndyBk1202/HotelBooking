@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -18,6 +19,7 @@ public class Review {
     @Max(value = 5, message = "Review rate must be from 1 to 5")
     private int reviewRate;
     private String comment;
+    private LocalDateTime createdTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
