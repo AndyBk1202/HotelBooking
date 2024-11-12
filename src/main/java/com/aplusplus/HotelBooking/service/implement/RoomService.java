@@ -172,6 +172,13 @@ public class RoomService implements IRoomService {
     public Response getAvailableRoomsByDateAndNumOfGuest(LocalDate checkInDate, LocalDate checkoutDate, int numOfGuest, Pageable pageable) {
         Response response = new Response();
         try{
+            // Check legal for check out date and check in date
+            if(checkInDate.isBefore(LocalDate.now()) || checkoutDate.isBefore(LocalDate.now())){
+                throw new IllegalArgumentException("Check in date and check out date must come after now");
+            }
+            if(checkoutDate.isBefore(checkInDate)){
+                throw new IllegalArgumentException("Check out date must come after check in date");
+            }
             Page<Room> roomPage = roomRepo.findByDateAndNumOfGuest(checkInDate,checkoutDate,numOfGuest, pageable);
             List<Room> roomList = roomPage.getContent();
             List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
@@ -203,6 +210,14 @@ public class RoomService implements IRoomService {
     public Response checkAvailable(LocalDate checkInDate, LocalDate checkOutDate, int totalGuest, Long roomId) {
         Response response = new Response();
         try{
+            // Check legal for check out date and check in date
+            if(checkInDate.isBefore(LocalDate.now()) || checkOutDate.isBefore(LocalDate.now())){
+                throw new IllegalArgumentException("Check in date and check out date must come after now");
+            }
+            if(checkOutDate.isBefore(checkInDate)){
+                throw new IllegalArgumentException("Check out date must come after check in date");
+            }
+
             Room room = roomRepo.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
             RoomDTO roomDTO = roomMapper.roomToRoomDTO(room);
             if(room.getRoomCapacity() < totalGuest) throw new OurException("Sức chứa của phòng không đủ đáp ứng nhu cầu của bạn, vui lòng chọn loại phòng khác lớn hơn!");
