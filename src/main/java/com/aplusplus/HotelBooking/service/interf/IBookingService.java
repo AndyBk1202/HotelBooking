@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public interface IBookingService {
     Response createBooking(Long roomId, String username, Booking request);
     Response getBookingById(String bookingId);
-    Response getBookingsByDate(LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Response getBookingsByDateAndRoomType(String roomType, LocalDate startDate, LocalDate endDate, Pageable pageable);
     Response getAllBooking(Pageable pageable);
     Response getBookingsByUsername(String username, Pageable pageable);
     Response getBookingsByRoomId(String roomId, Pageable pageable);

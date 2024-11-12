@@ -17,6 +17,12 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.checkInDate >= :startDate AND b.checkInDate <= :endDate")
     Page<Booking> getBookingByDate(LocalDate startDate, LocalDate endDate, Pageable pageable);
 
+    @Query("SELECT b FROM Booking b WHERE b.room.roomType = :roomType")
+    Page<Booking> getBookingsByRoomType(String roomType, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b WHERE b.room.roomType = :roomType AND b.checkInDate >= :startDate AND b.checkInDate <= :endDate")
+    Page<Booking> getBookingsByDateAndRoomType(String roomType, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
     @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId AND b.check_out_date >= :now", nativeQuery = true)
     Page<Booking> getRecentBookings(Long userId, LocalDate now, Pageable pageable);
 
