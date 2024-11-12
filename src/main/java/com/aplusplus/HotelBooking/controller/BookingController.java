@@ -86,4 +86,12 @@ public class BookingController {
         Response response = bookingService.getRecentBookings(user.getId(), now, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/get-by-user-id/{id}")
+    public ResponseEntity<Response> getRecentBookingsByUserId(@PathVariable(value = "id") String userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        LocalDate now = LocalDate.now();
+        Response response = bookingService.getRecentBookings(Long.valueOf(userId), now, pageable);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }

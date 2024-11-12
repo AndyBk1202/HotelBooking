@@ -38,6 +38,9 @@ public class BookingService implements IBookingService {
         Response response = new Response();
         try{
             // Check legal for check out date and check in date
+            if(bookingRequest.getCheckInDate().isBefore(LocalDate.now()) || bookingRequest.getCheckOutDate().isBefore(LocalDate.now())){
+                throw new IllegalArgumentException("Check in date and check out date must come after now");
+            }
             if(bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())){
                 throw new IllegalArgumentException("Check out date must come after check in date");
             }
@@ -49,6 +52,10 @@ public class BookingService implements IBookingService {
             // Check if there are remaining rooms or not
             if(roomService.remainingRoomAmount(room, bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate()) == 0){
                 throw new OurException("No available room for selected date range");
+            }
+            // Check if room's capacity meet customer need or not
+            if(room.getRoomCapacity() < bookingRequest.getNumOfChildren() + bookingRequest.getNumOfAdults()){
+                throw new OurException("This room capacity can't meet your need, please choose another room");
             }
 
             bookingRequest.setRoom(room);
@@ -232,5 +239,4 @@ public class BookingService implements IBookingService {
         }
         return response;
     }
-
 }
