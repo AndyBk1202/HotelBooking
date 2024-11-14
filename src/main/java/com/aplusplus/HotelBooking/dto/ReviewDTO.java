@@ -15,4 +15,6 @@ public class ReviewDTO {
     private int reviewRate;
     private String comment;
     private LocalDateTime createdTime;
+    private Long roomId;
+    private UserDTO user;
 }

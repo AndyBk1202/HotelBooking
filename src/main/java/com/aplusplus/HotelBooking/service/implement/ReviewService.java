@@ -5,28 +5,48 @@ import com.aplusplus.HotelBooking.dto.Response;
 import com.aplusplus.HotelBooking.dto.ReviewDTO;
 import com.aplusplus.HotelBooking.exception.OurException;
 import com.aplusplus.HotelBooking.mapper.ReviewMapper;
+import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.ReviewRepo;
+import com.aplusplus.HotelBooking.repository.RoomRepo;
+import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.interf.IReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService implements IReviewService {
     private final ReviewRepo reviewRepository;
     private final ReviewMapper reviewMapper;
-
+    private final UserRepo userRepository;
+    private final RoomRepo roomRepository;
     @Override
     public Response createReview(ReviewDTO reviewRequest) {
         Response response = new Response();
         try{
             var review = reviewMapper.toReview(reviewRequest);
             review.setCreatedTime(LocalDateTime.now());
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (principal instanceof UserDetails) {
+                String username = ((UserDetails) principal).getUsername();
+                // Assuming you have a method to get User entity by username
+                Optional<User> optionalUser = userRepository.findByEmail(username);
+                if (optionalUser.isPresent()) {
+                    User user = optionalUser.get();
+                    review.setUser(user);
+                } else {
+                    throw new OurException("User not found");
+                }
+            }
+            review.setRoom(roomRepository.findById(reviewRequest.getRoomId()).orElseThrow(() -> new OurException("Room not found")));
             reviewRepository.save(review);
             response.setStatusCode(200);
             response.setMessage("Create review successfully");
