@@ -12,4 +12,5 @@ public interface IReviewService {
     Response getReviewByRoomId(String roomId, Pageable pageable);
     Response updateReview(ReviewDTO review, String reviewId);
     Response deleteReview(String reviewId);
+    Response likeReview(String reviewId);
 }

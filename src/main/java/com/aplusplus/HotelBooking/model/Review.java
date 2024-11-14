@@ -20,6 +20,7 @@ public class Review {
     private int reviewRate;
     private String comment;
     private LocalDateTime createdTime;
+    private int likeCounter;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")

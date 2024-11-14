@@ -34,6 +34,7 @@ public class ReviewService implements IReviewService {
         try{
             var review = reviewMapper.toReview(reviewRequest);
             review.setCreatedTime(LocalDateTime.now());
+            review.setLikeCounter(0);
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if (principal instanceof UserDetails) {
                 String username = ((UserDetails) principal).getUsername();
@@ -156,6 +157,27 @@ public class ReviewService implements IReviewService {
             reviewRepository.deleteById(Long.parseLong(reviewId));
             response.setStatusCode(200);
             response.setMessage("Delete review successfully");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response likeReview(String reviewId) {
+        Response response = new Response();
+        try{
+            var review = reviewRepository.findById(Long.parseLong(reviewId)).orElseThrow(() -> new OurException("Review not found"));
+            review.setLikeCounter(review.getLikeCounter() + 1);
+            reviewRepository.save(review);
+
+            response.setReview(reviewMapper.toReviewDTO(review));
+            response.setStatusCode(200);
+            response.setMessage("Like review successfully");
         } catch (OurException e){
             response.setStatusCode(404);
             response.setMessage(e.getMessage());

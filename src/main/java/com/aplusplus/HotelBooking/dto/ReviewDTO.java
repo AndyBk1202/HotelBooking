@@ -16,5 +16,6 @@ public class ReviewDTO {
     private String comment;
     private LocalDateTime createdTime;
     private Long roomId;
+    private int likeCounter;
     private UserDTO user;
 }
