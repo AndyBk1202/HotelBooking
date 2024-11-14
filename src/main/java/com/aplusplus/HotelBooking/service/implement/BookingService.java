@@ -38,6 +38,9 @@ public class BookingService implements IBookingService {
         Response response = new Response();
         try{
             // Check legal for check out date and check in date
+            if(bookingRequest.getCheckInDate().isBefore(LocalDate.now()) || bookingRequest.getCheckOutDate().isBefore(LocalDate.now())){
+                throw new IllegalArgumentException("Check in date and check out date must come after now");
+            }
             if(bookingRequest.getCheckOutDate().isBefore(bookingRequest.getCheckInDate())){
                 throw new IllegalArgumentException("Check out date must come after check in date");
             }
@@ -49,6 +52,10 @@ public class BookingService implements IBookingService {
             // Check if there are remaining rooms or not
             if(roomService.remainingRoomAmount(room, bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate()) == 0){
                 throw new OurException("No available room for selected date range");
+            }
+            // Check if room's capacity meet customer need or not
+            if(room.getRoomCapacity() < bookingRequest.getNumOfChildren() + bookingRequest.getNumOfAdults()){
+                throw new OurException("This room capacity can't meet your need, please choose another room");
             }
 
             bookingRequest.setRoom(room);
@@ -95,11 +102,32 @@ public class BookingService implements IBookingService {
 
     @Override
     //For admin to see all bookings of customers in a range of date
-    public Response getBookingsByDate(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Response getBookingsByDateAndRoomType(String roomType, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         Response response = new Response();
         try{
-            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingByDate(startDate, endDate, pageable).map(bookingMapper::toBookingDTO);
-            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+            Page<BookingDTO> bookingDTOPage = bookingRepository.findAll(pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList;
+
+            // Set value for bookingDTOPage with each situation
+
+            // Miss roomType
+            if (roomType == null && startDate != null && endDate != null){
+                // Check legal for start date and end date
+                if(endDate.isBefore(startDate)) throw new IllegalArgumentException("End date must come after start date");
+                bookingDTOPage = bookingRepository.getBookingByDate(startDate, endDate, pageable).map(bookingMapper::toBookingDTO);
+            }
+            // Miss start date or end date
+            else if (roomType != null && startDate == null || roomType != null && endDate == null){
+                bookingDTOPage = bookingRepository.getBookingsByRoomType(roomType, pageable).map(bookingMapper::toBookingDTO);
+            }
+            // Full of params
+            else if (roomType != null){
+                // Check legal for start date and end date
+                if(endDate.isBefore(startDate)) throw new IllegalArgumentException("End date must come after start date");
+                bookingDTOPage = bookingRepository.getBookingsByDateAndRoomType(roomType, startDate, endDate, pageable).map(bookingMapper::toBookingDTO);
+            }
+
+            bookingDTOList = bookingDTOPage.getContent();
 
             response.setBookingList(bookingDTOList);
             response.setCurrentPage(bookingDTOPage.getNumber());
@@ -232,5 +260,4 @@ public class BookingService implements IBookingService {
         }
         return response;
     }
-
 }

@@ -3,6 +3,7 @@ package com.aplusplus.HotelBooking.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 
@@ -16,4 +17,5 @@ public class BookingDTO {
     private int totalNumOfGuest;
     private String bookingCode;
     private RoomDTO room;
+    private UserDTO user;
 }
