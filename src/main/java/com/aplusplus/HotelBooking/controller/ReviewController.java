@@ -52,4 +52,10 @@ public class ReviewController {
         Response response = reviewService.deleteReview(id);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+
+    @PostMapping("/like-review/{id}")
+    public ResponseEntity<Response> likeReview(@PathVariable("id") String id){
+        Response response = reviewService.likeReview(id);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }
