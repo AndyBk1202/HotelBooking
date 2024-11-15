@@ -29,7 +29,7 @@ public class ReviewService implements IReviewService {
     private final UserRepo userRepository;
     private final RoomRepo roomRepository;
     @Override
-    public Response createReview(ReviewDTO reviewRequest) {
+    public Response createReview(ReviewDTO reviewRequest, Long roomId) {
         Response response = new Response();
         try{
             var review = reviewMapper.toReview(reviewRequest);
@@ -47,7 +47,7 @@ public class ReviewService implements IReviewService {
                     throw new OurException("User not found");
                 }
             }
-            review.setRoom(roomRepository.findById(reviewRequest.getRoomId()).orElseThrow(() -> new OurException("Room not found")));
+            review.setRoom(roomRepository.findById(roomId).orElseThrow(() -> new OurException("Room not found")));
             reviewRepository.save(review);
             response.setStatusCode(200);
             response.setMessage("Create review successfully");
@@ -81,10 +81,10 @@ public class ReviewService implements IReviewService {
     }
 
     @Override
-    public Response getReviewByUserId(String userId, String roomId, Pageable pageable) {
+    public Response getReviewByUserId(String userId, Pageable pageable) {
         Response response = new Response();
         try{
-            Page<ReviewDTO> reviewDTOPage = reviewRepository.findAllByUserIdAndRoomId(Long.parseLong(userId), Long.parseLong(roomId), pageable).map(reviewMapper::toReviewDTO);
+            Page<ReviewDTO> reviewDTOPage = reviewRepository.findAllByUserId(Long.parseLong(userId), pageable).map(reviewMapper::toReviewDTO);
             List<ReviewDTO> reviewDTOList = reviewDTOPage.getContent();
 
             response.setReviewList(reviewDTOList);
@@ -168,11 +168,14 @@ public class ReviewService implements IReviewService {
     }
 
     @Override
-    public Response likeReview(String reviewId) {
+    public Response likeReview(String reviewId, Boolean isLike) {
         Response response = new Response();
         try{
             var review = reviewRepository.findById(Long.parseLong(reviewId)).orElseThrow(() -> new OurException("Review not found"));
-            review.setLikeCounter(review.getLikeCounter() + 1);
+            if(isLike)
+                review.setLikeCounter(review.getLikeCounter() + 1);
+            else
+                review.setLikeCounter(review.getLikeCounter() - 1);
             reviewRepository.save(review);
 
             response.setReview(reviewMapper.toReviewDTO(review));

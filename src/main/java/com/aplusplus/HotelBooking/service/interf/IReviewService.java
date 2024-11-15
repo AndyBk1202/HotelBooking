@@ -5,12 +5,11 @@ import com.aplusplus.HotelBooking.dto.ReviewDTO;
 import org.springframework.data.domain.Pageable;
 
 public interface IReviewService {
-    Response createReview(ReviewDTO review);
+    Response createReview(ReviewDTO review, Long roomId);
     Response getReviewById(String reviewId);
-    //Response getAllReview(); // not necessary
-    Response getReviewByUserId(String userId, String roomId, Pageable pageable); // thêm roomId
+    Response getReviewByUserId(String userId, Pageable pageable);
     Response getReviewByRoomId(String roomId, Pageable pageable);
     Response updateReview(ReviewDTO review, String reviewId);
     Response deleteReview(String reviewId);
-    Response likeReview(String reviewId);
+    Response likeReview(String reviewId, Boolean isLike);
 }
