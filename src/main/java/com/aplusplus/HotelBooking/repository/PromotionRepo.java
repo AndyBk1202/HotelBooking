@@ -14,4 +14,6 @@ import java.util.Optional;
 
 public interface PromotionRepo extends JpaRepository<Promotion, Long> {
     Optional<Promotion> findById(Long id);
+
+    Page<Promotion> findAll(Pageable pageable);
 }

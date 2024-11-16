@@ -2,11 +2,12 @@ package com.aplusplus.HotelBooking.service.interf;
 
 import com.aplusplus.HotelBooking.dto.PromotionDTO;
 import com.aplusplus.HotelBooking.dto.Response;
+import org.springframework.data.domain.Pageable;
 
 public interface IPromotionService {
-    Response createPromotion(PromotionDTO promotion); // thêm list các roomId
+    Response createPromotionForRoomType(PromotionDTO promotion, String[] listRoomType); // thêm list các roomId
     Response getPromotionById(String promotionId); // Admin xem chi tiết promotion
-    Response getAllPromotion(); // Admin
+    Response getAllPromotion(Pageable pageable); // Admin
     Response updatePromotion(PromotionDTO promotion); // Admin
     Response deletePromotion(String promotionId);
     Response applyPromotionToRoom(String promotionId, String roomId); // Liên quan Booking
