@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface BookingRepo extends JpaRepository<Booking, Long> {
     Optional<Booking> findByCheckInDateAndCheckOutDate(LocalDate checkInDate, LocalDate checkOutDate);
     Page<Booking> findAll(Pageable pageable);
+
     @Query("SELECT b FROM Booking b WHERE b.checkInDate >= :startDate AND b.checkInDate <= :endDate")
     Page<Booking> getBookingByDate(LocalDate startDate, LocalDate endDate, Pageable pageable);
 

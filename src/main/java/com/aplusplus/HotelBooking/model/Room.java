@@ -34,9 +34,13 @@ public class Room {
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "promotion_id")
-    private Promotion promotion;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "room_promotion",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
+    private List<Promotion> promotions = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Review> review;
@@ -44,4 +48,19 @@ public class Room {
     @OneToOne
     @JoinColumn(name = "facility_id", referencedColumnName = "id")
     private Facility facility;
+
+    @Override
+    public String toString() {
+        return "Room{" +
+                "id=" + id +
+                ", roomType='" + roomType + '\'' +
+                ", roomSize='" + roomSize + '\'' +
+                ", roomPrice=" + roomPrice +
+                ", roomDescription='" + roomDescription + '\'' +
+                ", roomStatus='" + roomStatus + '\'' +
+                ", roomPhotoUrl='" + roomPhotoUrl + '\'' +
+                ", roomCapacity=" + roomCapacity +
+                ", roomAmount=" + roomAmount +
+                '}';
+    }
 }

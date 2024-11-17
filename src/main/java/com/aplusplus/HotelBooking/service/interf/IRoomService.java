@@ -28,5 +28,4 @@ public interface IRoomService {
     Response getAvailableRoomsByDateAndNumOfGuest(LocalDate checkInDate, LocalDate checkoutDate, int numOfGuest, Pageable pageable);
 
     Response checkAvailable(LocalDate checkInDate, LocalDate checkOutDate, int totalGuest, Long roomId);
-
 }
