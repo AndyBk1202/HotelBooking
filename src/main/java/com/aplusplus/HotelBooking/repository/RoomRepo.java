@@ -17,4 +17,16 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
     Page<Room> findByDateAndNumOfGuest(LocalDate checkInDate, LocalDate checkOutDate, int numOfGuest, Pageable pageable);
 
     List<Room> findByRoomType(String roomType);
+
+    @Query(value = "SELECT AVG(review_rate) FROM reviews WHERE room_id = :roomId", nativeQuery = true)
+    Double getAverageRating(Long roomId);
+
+    @Query(value = "SELECT COUNT(review_rate) FROM reviews WHERE room_id = :roomId", nativeQuery = true)
+    Long getNumberOfRating(Long roomId);
+
+    @Query(value = "SELECT COUNT(*) FROM bookings WHERE room_id = :roomId", nativeQuery = true)
+    Long getNumberOfBooking(Long roomId);
+
+    @Query(value = "SELECT MAX(percent_of_discount) FROM promotions p JOIN room_promotion rp ON p.id = rp.promotion_id WHERE room_id = :roomId AND end_date >= :now", nativeQuery = true)
+    Double getMaxDiscount(Long roomId, LocalDate now);
 }
