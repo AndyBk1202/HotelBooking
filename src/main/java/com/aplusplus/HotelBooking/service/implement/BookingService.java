@@ -60,6 +60,14 @@ public class BookingService implements IBookingService {
 
             bookingRequest.setRoom(room);
             bookingRequest.setUser(user);
+
+            // Add discount and final price
+            Double percentOfDiscount = roomRepo.getMaxDiscount(roomId, LocalDate.now());
+            if(percentOfDiscount == null) percentOfDiscount = 0.;
+            Double finalPrice = room.getRoomPrice() - room.getRoomPrice()*percentOfDiscount/100;
+            bookingRequest.setPercentOfDiscount(percentOfDiscount);
+            bookingRequest.setFinalPrice(finalPrice);
+
             String bookingCode = utils.generateRandomConfirmationCode(10);
             bookingRequest.setBookingCode(bookingCode);
             bookingRequest.setTotalNumOfGuest(bookingRequest.getNumOfAdults() + bookingRequest.getNumOfChildren());
