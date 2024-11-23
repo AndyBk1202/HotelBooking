@@ -94,13 +94,6 @@ public class EmailService {
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">Giá phòng:</td>
-                        <td style="padding: 8px; border: 1px solid #ddd;">
-                        """ + room.getRoomPrice().longValue() + """
-                        VND
-                        </td>
-                    </tr>
-                    <tr>
                         <td style="padding: 8px; border: 1px solid #ddd;">Sức chứa:</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">
                         """ + room.getRoomCapacity() + """ 
@@ -116,6 +109,27 @@ public class EmailService {
                         <td style="padding: 8px; border: 1px solid #ddd;">Tình trạng phòng:</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">
                         """ + room.getRoomStatus() + """
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Giá phòng (giá gốc):</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                        """ + room.getRoomPrice().longValue() + """
+                        VND
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Voucher giảm giá (%):</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                        """ + booking.getPercentOfDiscount().intValue() + """
+                        %
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Số tiền cần thanh toán:</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                        """ + booking.getFinalPrice().longValue() + """
+                        VND
                         </td>
                     </tr>
                 </table>

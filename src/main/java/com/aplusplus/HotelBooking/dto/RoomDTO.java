@@ -1,7 +1,6 @@
 package com.aplusplus.HotelBooking.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
@@ -20,4 +19,9 @@ public class RoomDTO {
     private FacilityDTO facility;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int remain;
+    private Double averageRating;
+    private Long numberOfRating;
+    private Long numberOfBooking;
+    private Double newPrice;
+    private Double percentOfDiscount;
 }
