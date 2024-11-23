@@ -12,8 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -132,20 +131,37 @@ public class PromotionService implements IPromotionService {
             }
 
             if (newPromotion.getListRoomTypes() != null) {
-                List<Room> roomListPromotion = new ArrayList<>();
-                for (int i = 0; i < newPromotion.getListRoomTypes().length; i++) {
-                    List<Room> rooms = roomRepository.findByRoomType(newPromotion.getListRoomTypes()[i]);
-                    for (Room room : rooms) {
-                        /// in the MySQL setting, room_id and promotion_id aren't primary key
-                        /// database still save the same record, so we need to check if the room already have the promotion
-                        if (!room.getPromotions().contains(promotionUpdate))
-                        {
-                            room.getPromotions().add(promotionUpdate);
-                        }
+
+
+                // for removing room type from promotion
+                List<String> listOfNewRoomType = List.of(newPromotion.getListRoomTypes());
+                boolean[] isRoomTypeExist = new boolean[listOfNewRoomType.size()];
+                Arrays.fill(isRoomTypeExist, false);
+                // false when room type is not exist in new promotion
+
+                for (Room room : promotionUpdate.getRooms()) {
+                    if (!listOfNewRoomType.contains(room.getRoomType())) {
+                        room.getPromotions().remove(promotionUpdate);
+                    } else {
+                        isRoomTypeExist[listOfNewRoomType.indexOf(room.getRoomType())] = true;
                     }
-                    roomListPromotion.addAll(rooms);
                 }
-                promotionUpdate.setRooms(roomListPromotion);
+
+                // for adding new room type to promotion
+                List<Room> roomListPromotions = new ArrayList<>();
+                for (int i = 0; i < newPromotion.getListRoomTypes().length; i++) {
+                    if (!isRoomTypeExist[i]) {
+                        List<Room> rooms = roomRepository.findByRoomType(newPromotion.getListRoomTypes()[i]);
+                        for (Room room : rooms) {
+                            // check duplicate room
+                            if (!roomListPromotions.contains(room)) {
+                                room.getPromotions().add(promotionUpdate);
+                            }
+                        }
+                        roomListPromotions.addAll(rooms);
+                    }
+                }
+                promotionUpdate.setRooms(roomListPromotions);
                 promotionRepository.save(promotionUpdate);
             }
 

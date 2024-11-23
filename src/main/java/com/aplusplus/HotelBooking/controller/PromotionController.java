@@ -50,6 +50,7 @@ public class PromotionController {
     }
 
     // user service updatePromotion
+    // still has bugs, when removing room type from promotion list room type, it still remains in the list
     @PostMapping("/update-promotion/{id}")
     public ResponseEntity<Response> updatePromotion(@RequestBody PromotionDTO promotion){
         Response response = promotionService.updatePromotion(promotion);
@@ -68,5 +69,8 @@ public class PromotionController {
         return null;
     }
 
-
+    @GetMapping("/get-latest_promotion")
+    public ResponseEntity<Response> getLatestPromotion(){
+        return null;
+    }
 }
