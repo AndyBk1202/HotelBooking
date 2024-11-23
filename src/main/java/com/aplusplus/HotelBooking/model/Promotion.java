@@ -21,13 +21,14 @@ public class Promotion {
     private Long id;
     @NotNull(message = "Percent of discount is required")
     private Double percentOfDiscount;
+    private String promotionTitle;
     private String description;
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
     @NotNull(message = "End date is required")
     private LocalDate endDate;
 
-    @ManyToMany(mappedBy = "promotions", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "promotions", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     private List<Room> rooms = new ArrayList<>();
 
     @Override

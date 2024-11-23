@@ -52,25 +52,29 @@ public class PromotionController {
     // user service updatePromotion
     // still has bugs, when removing room type from promotion list room type, it still remains in the list
     @PostMapping("/update-promotion/{id}")
-    public ResponseEntity<Response> updatePromotion(@RequestBody PromotionDTO promotion){
-        Response response = promotionService.updatePromotion(promotion);
+    public ResponseEntity<Response> updatePromotion(@RequestBody PromotionDTO promotion, @PathVariable("id") String id){
+        Response response = promotionService.updatePromotion(promotion, id);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     // user service deletePromotion
     @PostMapping("/delete-promotion/{id}")
     public ResponseEntity<Response> deletePromotion(@PathVariable("id") String id){
-        return null;
+        Response response = promotionService.deletePromotion(id);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     // user service applyPromotionToRoom
     @GetMapping("/get-promotion-by-room/{room_id}")
-    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id){
-        return null;
+    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id) {
+        Response response = promotionService.getPromotionByRoomId(room_id);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @GetMapping("/get-latest_promotion")
-    public ResponseEntity<Response> getLatestPromotion(){
-        return null;
+    @GetMapping("/get-latest-promotion")
+    public ResponseEntity<Response> getLatestPromotion(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = promotionService.getLatestPromotion(pageable);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }

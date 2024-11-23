@@ -113,15 +113,18 @@ public class PromotionService implements IPromotionService {
     }
 
     @Override
-    public Response updatePromotion(PromotionDTO newPromotion) {
+    public Response updatePromotion(PromotionDTO newPromotion, String promotionId) {
         Response response = new Response();
         try {
-            Promotion promotionUpdate = promotionRepository.findById(newPromotion.getId()).orElseThrow(() -> new Exception("Promotion not found"));
+            Promotion promotionUpdate = promotionRepository.findById(Long.parseLong(promotionId)).orElseThrow(() -> new Exception("Promotion not found"));
             if (newPromotion.getPercentOfDiscount() != null) {
                 promotionUpdate.setPercentOfDiscount(newPromotion.getPercentOfDiscount());
             }
             if (newPromotion.getDescription() != null && !newPromotion.getDescription().isEmpty()) {
                 promotionUpdate.setDescription(newPromotion.getDescription());
+            }
+            if (newPromotion.getPromotionTitle() != null && !newPromotion.getPromotionTitle().isEmpty()) {
+                promotionUpdate.setPromotionTitle(newPromotion.getPromotionTitle());
             }
             if (newPromotion.getStartDate() != null && !newPromotion.getStartDate().toString().isEmpty()) {
                 promotionUpdate.setStartDate(newPromotion.getStartDate());
@@ -177,7 +180,23 @@ public class PromotionService implements IPromotionService {
 
     @Override
     public Response deletePromotion(String promotionId) {
-        return null;
+        Response response = new Response();
+        try {
+            Promotion promotion = promotionRepository.findById(Long.parseLong(promotionId)).orElseThrow(() -> new Exception("Promotion not found"));
+            List<Room> rooms = promotion.getRooms();
+            for (Room room : rooms) {
+                room.getPromotions().remove(promotion);
+            }
+            promotionRepository.delete(promotion);
+
+            response.setStatusCode(200);
+            response.setMessage("Delete promotion successfully");
+        }
+        catch (Exception e) {
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        }
+        return response;
     }
 
     @Override
@@ -187,6 +206,57 @@ public class PromotionService implements IPromotionService {
 
     @Override
     public Response getPromotionByRoomId(String roomId) {
-        return null;
+        Response response = new Response();
+        try {
+            Room room = roomRepository.findById(Long.parseLong(roomId)).orElseThrow(() -> new Exception("Room not found"));
+            List<Promotion> promotions = room.getPromotions();
+            List<PromotionDTO> promotionDTOS = new ArrayList<>();
+
+            for (Promotion promotion : promotions) {
+                PromotionDTO promotionDTO = promotionMapper.toPromotionDTO(promotion);
+                promotionDTOS.add(promotionDTO);
+            }
+
+            response.setStatusCode(200);
+            response.setPromotionList(promotionDTOS);
+        }
+        catch (Exception e) {
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response getLatestPromotion(Pageable pageable) {
+        Response response = new Response();
+        try {
+            List<Promotion> promotions = promotionRepository.findTop3ByCurrentDateBetweenStartDateAndEndDateOrderByStartDateDesc(pageable);
+            List<PromotionDTO> promotionDTOS = new ArrayList<>();
+
+            for (Promotion promotion : promotions) {
+                PromotionDTO promotionDTO = promotionMapper.toPromotionDTO(promotion);
+                List<Room> rooms = promotion.getRooms();
+                List<String> listRoomType = new ArrayList<>();
+
+                for (Room room : rooms) {
+                    if (!listRoomType.contains(room.getRoomType())) {
+                        listRoomType.add(room.getRoomType());
+                    }
+                }
+                listRoomType.sort(String::compareTo);
+                promotionDTO.setListRoomTypes(listRoomType.toArray(new String[0]));
+
+                promotionDTOS.add(promotionDTO);
+            }
+
+            response.setStatusCode(200);
+            response.setPromotionList(promotionDTOS);
+        }
+        catch (Exception e) {
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        }
+        return response;
     }
 }

@@ -14,6 +14,7 @@ import java.util.HashSet;
 public class PromotionDTO {
     private Long id;
     private Double percentOfDiscount;
+    private String promotionTitle;
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
