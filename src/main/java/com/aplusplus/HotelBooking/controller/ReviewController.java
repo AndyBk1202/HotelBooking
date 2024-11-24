@@ -7,6 +7,7 @@ import com.aplusplus.HotelBooking.service.interf.IReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,15 +30,15 @@ public class ReviewController {
     }
 
     @GetMapping("/get-review-by-user-id/{userId}")
-    public ResponseEntity<Response> getReviewByUserId(@PathVariable String userId, @RequestParam String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-        Pageable pageable = PageRequest.of(page, size);
+    public ResponseEntity<Response> getReviewByUserId(@PathVariable String userId, @RequestParam String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size, @RequestParam(defaultValue = "createdTime") String sortBy){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
         Response response = reviewService.getReviewByUserId(userId, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     @GetMapping("/get-review-by-room-id/{roomId}")
-    public ResponseEntity<Response> getReviewByRoomId(@PathVariable String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-        Pageable pageable = PageRequest.of(page, size);
+    public ResponseEntity<Response> getReviewByRoomId(@PathVariable String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size, @RequestParam(defaultValue = "createdTime") String sortBy){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
         Response response = reviewService.getReviewByRoomId(roomId, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
