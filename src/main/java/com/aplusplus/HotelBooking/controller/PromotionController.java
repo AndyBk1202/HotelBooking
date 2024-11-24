@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/promotions")
+@RequiredArgsConstructor
 public class PromotionController {
 
-    @Autowired
-    private  IPromotionService promotionService;
+    private final IPromotionService promotionService;
 
     // user service createPromotion
     @PostMapping("/create-promotion")
