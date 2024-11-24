@@ -1,24 +1,14 @@
 package com.aplusplus.HotelBooking.controller;
 
-import com.aplusplus.HotelBooking.dto.BookingDTO;
-import com.aplusplus.HotelBooking.dto.DateRequest;
 import com.aplusplus.HotelBooking.dto.PromotionDTO;
 import com.aplusplus.HotelBooking.dto.Response;
-import com.aplusplus.HotelBooking.exception.OurException;
-import com.aplusplus.HotelBooking.model.Booking;
-import com.aplusplus.HotelBooking.model.User;
-import com.aplusplus.HotelBooking.repository.UserRepo;
-import com.aplusplus.HotelBooking.service.implement.BookingService;
-import com.aplusplus.HotelBooking.service.interf.IBookingService;
 import com.aplusplus.HotelBooking.service.interf.IPromotionService;
-import com.aplusplus.HotelBooking.utils.Utils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/promotions")
@@ -29,8 +19,10 @@ public class PromotionController {
 
     // user service createPromotion
     @PostMapping("/create-promotion")
-    public ResponseEntity<Response> createPromotion(@RequestBody PromotionDTO promotion) {
-        Response response = promotionService.createPromotionForRoomType(promotion, promotion.getListRoomTypes());
+    public ResponseEntity<Response> createPromotion(
+            @RequestPart(value = "promotion") PromotionDTO promotion,
+            @RequestPart(value = "imageFile") MultipartFile imageFile) {
+        Response response = promotionService.createPromotionForRoomType(promotion, promotion.getListRoomTypes(), imageFile);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -52,8 +44,11 @@ public class PromotionController {
     // user service updatePromotion
     // still has bugs, when removing room type from promotion list room type, it still remains in the list
     @PostMapping("/update-promotion/{id}")
-    public ResponseEntity<Response> updatePromotion(@RequestBody PromotionDTO promotion, @PathVariable("id") String id){
-        Response response = promotionService.updatePromotion(promotion, id);
+    public ResponseEntity<Response> updatePromotion(
+            @RequestPart(value = "promotion") PromotionDTO promotion,
+            @RequestPart(value = "imageFile") MultipartFile imageFile,
+            @PathVariable("id") String id) {
+        Response response = promotionService.updatePromotion(promotion, id, imageFile);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

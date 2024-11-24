@@ -7,10 +7,12 @@ import com.aplusplus.HotelBooking.model.Promotion;
 import com.aplusplus.HotelBooking.model.Room;
 import com.aplusplus.HotelBooking.repository.PromotionRepo;
 import com.aplusplus.HotelBooking.repository.RoomRepo;
+import com.aplusplus.HotelBooking.service.FirebaseStorageService;
 import com.aplusplus.HotelBooking.service.interf.IPromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -21,9 +23,10 @@ public class PromotionService implements IPromotionService {
     private final PromotionRepo promotionRepository;
     private final PromotionMapper promotionMapper;
     private final RoomRepo roomRepository;
+    private final FirebaseStorageService firebaseStorageService;
 
     @Override
-    public Response createPromotionForRoomType(PromotionDTO promotionDTO, String[] listRoomType) {
+    public Response createPromotionForRoomType(PromotionDTO promotionDTO, String[] listRoomType, MultipartFile imageFile) {
         Response response = new Response();
         try {
             Promotion promotion = promotionMapper.toPromotion(promotionDTO);
@@ -37,6 +40,13 @@ public class PromotionService implements IPromotionService {
                 roomListPromotion.addAll(rooms);
             }
             promotion.setRooms(roomListPromotion);
+
+            // save image to firebase
+            if (imageFile != null) {
+                String imageUrl = firebaseStorageService.uploadFile(imageFile);
+                promotion.setPromotionPhotoUrl(imageUrl);
+            }
+
             promotionRepository.save(promotion);
 
 
@@ -113,7 +123,7 @@ public class PromotionService implements IPromotionService {
     }
 
     @Override
-    public Response updatePromotion(PromotionDTO newPromotion, String promotionId) {
+    public Response updatePromotion(PromotionDTO newPromotion, String promotionId, MultipartFile imageFile) {
         Response response = new Response();
         try {
             Promotion promotionUpdate = promotionRepository.findById(Long.parseLong(promotionId)).orElseThrow(() -> new Exception("Promotion not found"));
@@ -165,6 +175,13 @@ public class PromotionService implements IPromotionService {
                     }
                 }
                 promotionUpdate.setRooms(roomListPromotions);
+
+                // save image to firebase
+                if (imageFile != null) {
+                    String imageUrl = firebaseStorageService.uploadFile(imageFile);
+                    promotionUpdate.setPromotionPhotoUrl(imageUrl);
+                }
+
                 promotionRepository.save(promotionUpdate);
             }
 

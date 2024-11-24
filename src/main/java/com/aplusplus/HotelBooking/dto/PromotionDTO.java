@@ -18,5 +18,7 @@ public class PromotionDTO {
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String promotionPhotoUrl;
     private String[] listRoomTypes;
+
 }

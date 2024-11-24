@@ -28,6 +28,8 @@ public class Promotion {
     @NotNull(message = "End date is required")
     private LocalDate endDate;
 
+    private String promotionPhotoUrl;
+
     @ManyToMany(mappedBy = "promotions", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     private List<Room> rooms = new ArrayList<>();
 
