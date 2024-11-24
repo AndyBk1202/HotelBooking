@@ -44,6 +44,9 @@ public class RoomService implements IRoomService {
         try{
             Room room = roomRepo.findById(Long.valueOf(roomId)).orElseThrow(() -> new OurException("Room not found"));
             RoomDTO roomDTO = roomMapper.roomToRoomDTO(room);
+            // Get room statistic and new price with promotion
+            roomDTO = setRoomStatistic(roomDTO);
+
             response.setRoom(roomDTO);
             response.setStatusCode(200);
             response.setMessage("Get room with id: " + roomId + " successfully");
@@ -61,10 +64,13 @@ public class RoomService implements IRoomService {
     public Response getAllRoom(Pageable pageable) {
         Response response = new Response();
         try{
-//            List<Room> roomList = roomRepo.findAll();
-//            List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
             Page<RoomDTO> roomDTOPage = roomRepo.findAll(pageable).map(roomMapper::roomToRoomDTO);
-            response.setRoomList(roomDTOPage.getContent());
+            List<RoomDTO> roomDTOList = roomDTOPage.getContent();
+            // Set room statistic
+            for(RoomDTO roomDTO : roomDTOList){
+                roomDTO = setRoomStatistic(roomDTO);
+            }
+            response.setRoomList(roomDTOList);
             response.setCurrentPage(roomDTOPage.getNumber());
             response.setTotalPages(roomDTOPage.getTotalPages());
             response.setTotalElements(roomDTOPage.getTotalElements());
@@ -193,6 +199,11 @@ public class RoomService implements IRoomService {
                 roomDTOList.get(i).setRemain(roomDTOList.get(i).getRoomAmount() - count);
                 roomDTOList.get(i).setRoomStatus("Còn " + roomDTOList.get(i).getRemain() + " phòng trống");
             }
+
+            //Set room statistic
+            for(RoomDTO roomDTO : roomDTOList){
+                roomDTO = setRoomStatistic(roomDTO);
+            }
             response.setRoomList(roomDTOList);
             response.setCurrentPage(roomPage.getNumber());
             response.setTotalPages(roomPage.getTotalPages());
@@ -262,5 +273,23 @@ public class RoomService implements IRoomService {
                 count++;
         }
         return room.getRoomAmount() - count;
+    }
+
+    public RoomDTO setRoomStatistic(RoomDTO roomDTO){
+        Double averageRating = roomRepo.getAverageRating(roomDTO.getId());
+        if(averageRating == null) averageRating = 0.;
+        Long numberOfRating = roomRepo.getNumberOfRating(roomDTO.getId());
+        Long numberOfBooking = roomRepo.getNumberOfBooking(roomDTO.getId());
+        Double maxDiscount = roomRepo.getMaxDiscount(roomDTO.getId(), LocalDate.now());
+        if(maxDiscount == null) maxDiscount = 0.;
+        Double newPrice = roomDTO.getRoomPrice() - roomDTO.getRoomPrice()*maxDiscount/100;
+
+        roomDTO.setAverageRating(averageRating);
+        roomDTO.setNumberOfRating(numberOfRating);
+        roomDTO.setNumberOfBooking(numberOfBooking);
+        roomDTO.setPercentOfDiscount(maxDiscount);
+        roomDTO.setNewPrice(newPrice);
+
+        return roomDTO;
     }
 }

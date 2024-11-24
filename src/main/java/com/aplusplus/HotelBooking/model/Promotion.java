@@ -2,6 +2,7 @@ package com.aplusplus.HotelBooking.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -16,14 +17,26 @@ public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotBlank(message = "Percent of discount is required")
+    @NotNull(message = "Percent of discount is required")
     private Double percentOfDiscount;
     private String description;
-    @NotBlank(message = "Start date is required")
+    @NotNull(message = "Start date is required")
     private LocalDate startDate;
-    @NotBlank(message = "End date is required")
+    @NotNull(message = "End date is required")
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "promotions", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Room> rooms = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "Promotion{" +
+                "id=" + id +
+                ", percentOfDiscount=" + percentOfDiscount +
+                ", description='" + description + '\'' +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                '}';
+    }
+
 }
