@@ -30,7 +30,7 @@ public class ReviewController {
     }
 
     @GetMapping("/get-review-by-user-id/{userId}")
-    public ResponseEntity<Response> getReviewByUserId(@PathVariable String userId, @RequestParam String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size, @RequestParam(defaultValue = "createdTime") String sortBy){
+    public ResponseEntity<Response> getReviewByUserId(@PathVariable String userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size, @RequestParam(defaultValue = "createdTime") String sortBy){
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
         Response response = reviewService.getReviewByUserId(userId, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);

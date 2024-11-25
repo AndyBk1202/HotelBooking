@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ReviewDTO {
     @Min(value = 1, message = "Review rate must be from 1 to 5")
     @Max(value = 5, message = "Review rate must be from 1 to 5")
+    private int id;
     private int reviewRate;
     private String comment;
     private LocalDateTime createdTime;
