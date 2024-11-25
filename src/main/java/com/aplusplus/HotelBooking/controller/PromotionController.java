@@ -1,36 +1,28 @@
 package com.aplusplus.HotelBooking.controller;
 
-import com.aplusplus.HotelBooking.dto.BookingDTO;
-import com.aplusplus.HotelBooking.dto.DateRequest;
 import com.aplusplus.HotelBooking.dto.PromotionDTO;
 import com.aplusplus.HotelBooking.dto.Response;
-import com.aplusplus.HotelBooking.exception.OurException;
-import com.aplusplus.HotelBooking.model.Booking;
-import com.aplusplus.HotelBooking.model.User;
-import com.aplusplus.HotelBooking.repository.UserRepo;
-import com.aplusplus.HotelBooking.service.implement.BookingService;
-import com.aplusplus.HotelBooking.service.interf.IBookingService;
 import com.aplusplus.HotelBooking.service.interf.IPromotionService;
-import com.aplusplus.HotelBooking.utils.Utils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/promotions")
+@RequiredArgsConstructor
 public class PromotionController {
 
-    @Autowired
-    private  IPromotionService promotionService;
+    private final IPromotionService promotionService;
 
     // user service createPromotion
     @PostMapping("/create-promotion")
-    public ResponseEntity<Response> createPromotion(@RequestBody PromotionDTO promotion) {
-        Response response = promotionService.createPromotionForRoomType(promotion, promotion.getListRoomTypes());
+    public ResponseEntity<Response> createPromotion(
+            @RequestPart(value = "promotion") PromotionDTO promotion,
+            @RequestPart(value = "imageFile") MultipartFile imageFile) {
+        Response response = promotionService.createPromotionForRoomType(promotion, promotion.getListRoomTypes(), imageFile);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -50,23 +42,34 @@ public class PromotionController {
     }
 
     // user service updatePromotion
+    // still has bugs, when removing room type from promotion list room type, it still remains in the list
     @PostMapping("/update-promotion/{id}")
-    public ResponseEntity<Response> updatePromotion(@RequestBody PromotionDTO promotion){
-        Response response = promotionService.updatePromotion(promotion);
+    public ResponseEntity<Response> updatePromotion(
+            @RequestPart(value = "promotion") PromotionDTO promotion,
+            @RequestPart(value = "imageFile") MultipartFile imageFile,
+            @PathVariable("id") String id) {
+        Response response = promotionService.updatePromotion(promotion, id, imageFile);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     // user service deletePromotion
     @PostMapping("/delete-promotion/{id}")
     public ResponseEntity<Response> deletePromotion(@PathVariable("id") String id){
-        return null;
+        Response response = promotionService.deletePromotion(id);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     // user service applyPromotionToRoom
     @GetMapping("/get-promotion-by-room/{room_id}")
-    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id){
-        return null;
+    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id) {
+        Response response = promotionService.getPromotionByRoomId(room_id);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-
+    @GetMapping("/get-latest-promotion")
+    public ResponseEntity<Response> getLatestPromotion(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = promotionService.getLatestPromotion(pageable);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }

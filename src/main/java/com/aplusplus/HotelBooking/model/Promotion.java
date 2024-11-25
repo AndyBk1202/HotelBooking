@@ -8,7 +8,9 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -19,13 +21,16 @@ public class Promotion {
     private Long id;
     @NotNull(message = "Percent of discount is required")
     private Double percentOfDiscount;
+    private String promotionTitle;
     private String description;
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
     @NotNull(message = "End date is required")
     private LocalDate endDate;
 
-    @ManyToMany(mappedBy = "promotions", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private String promotionPhotoUrl;
+
+    @ManyToMany(mappedBy = "promotions", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     private List<Room> rooms = new ArrayList<>();
 
     @Override
