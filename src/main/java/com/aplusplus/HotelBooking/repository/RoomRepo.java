@@ -1,6 +1,7 @@
 package com.aplusplus.HotelBooking.repository;
 
 import com.aplusplus.HotelBooking.model.Room;
+import com.google.storage.v2.ObjectChecksums;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface RoomRepo extends JpaRepository<Room, Long> {
@@ -30,4 +32,13 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
 
     @Query(value = "SELECT MAX(percent_of_discount) FROM promotions p JOIN room_promotion rp ON p.id = rp.promotion_id WHERE room_id = :roomId AND end_date >= :now", nativeQuery = true)
     Double getMaxDiscount(Long roomId, LocalDate now);
+
+    @Query(value = "SELECT room_type, COUNT(room_type) as total_bookings " +
+            "FROM bookings b JOIN payments p ON b.id = p.booking_id " +
+            "JOIN rooms r ON b.room_id = r.id " +
+            "WHERE YEAR(check_in_date) = :year AND MONTH(check_in_date) = :month AND payment_status = 'PAID'" +
+            "GROUP BY room_type " +
+            "ORDER BY total_bookings " +
+            "LIMIT 1", nativeQuery = true)
+    Map<String, Object> getTrendingRoomAndNumberOfBookingsByYearAndMonth(Integer year, Integer month);
 }

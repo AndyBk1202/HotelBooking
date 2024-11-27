@@ -32,4 +32,9 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId", nativeQuery = true)
     Page<Booking> getBookingsByUser(Long userId, Pageable pageable);
+
+    @Query(value = "SELECT COUNT(*) FROM " +
+            "payments p JOIN bookings b ON p.booking_id = b.id " +
+            "WHERE YEAR(check_in_date) = :year AND MONTH(check_in_date) = :month AND payment_status = 'PAID'", nativeQuery = true)
+    Long getTotalBookingsByYearAndMonth(Integer year, Integer month);
 }
