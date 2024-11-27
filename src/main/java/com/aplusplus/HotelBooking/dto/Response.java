@@ -44,6 +44,8 @@ public class Response {
 
     private List<PromotionDTO> promotionList;
 
+    private ReportDTO report;
+
     //Pagination information
     private Integer currentPage;
     private Integer totalPages;
