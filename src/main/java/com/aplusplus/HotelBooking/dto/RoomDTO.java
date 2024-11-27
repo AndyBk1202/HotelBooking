@@ -9,7 +9,7 @@ public class RoomDTO {
     private Long id;
     private String roomType;
     private String roomSize;
-    private Double roomPrice;
+    private Long roomPrice;
     private String roomDescription;
     private String roomStatus;
 //  private String bookingCode;
@@ -22,6 +22,6 @@ public class RoomDTO {
     private Double averageRating;
     private Long numberOfRating;
     private Long numberOfBooking;
-    private Double newPrice;
-    private Double percentOfDiscount;
+    private Long newPrice;
+    private Long percentOfDiscount;
 }

@@ -287,8 +287,8 @@ public class RoomService implements IRoomService {
         roomDTO.setAverageRating(averageRating);
         roomDTO.setNumberOfRating(numberOfRating);
         roomDTO.setNumberOfBooking(numberOfBooking);
-        roomDTO.setPercentOfDiscount(maxDiscount);
-        roomDTO.setNewPrice(newPrice);
+        roomDTO.setPercentOfDiscount(maxDiscount.longValue());
+        roomDTO.setNewPrice(newPrice.longValue());
 
         return roomDTO;
     }

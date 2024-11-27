@@ -16,8 +16,8 @@ public class BookingDTO {
     private int numOfAdults;
     private int totalNumOfGuest;
     private String bookingCode;
-    private Double percentOfDiscount;
-    private Double finalPrice;
+    private Long percentOfDiscount;
+    private Long finalPrice;
     private RoomDTO room;
     private UserDTO user;
 }
