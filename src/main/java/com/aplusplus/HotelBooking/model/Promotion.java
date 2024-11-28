@@ -21,6 +21,7 @@ public class Promotion {
     private Long id;
     @NotNull(message = "Percent of discount is required")
     private Integer percentOfDiscount;
+    @NotBlank(message = "Promotion title is required")
     private String promotionTitle;
     private String description;
     @NotNull(message = "Start date is required")

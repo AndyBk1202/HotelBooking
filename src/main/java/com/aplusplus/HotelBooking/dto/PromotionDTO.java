@@ -14,6 +14,7 @@ import java.util.HashSet;
 public class PromotionDTO {
     private Long id;
     private Integer percentOfDiscount;
+    @NotBlank(message = "Promotion title is required")
     private String promotionTitle;
     private String description;
     private LocalDate startDate;
