@@ -51,7 +51,7 @@ public class PromotionController {
     @PutMapping("/update-promotion/{id}")
     public ResponseEntity<Response> updatePromotion(
             @RequestPart(value = "promotion") PromotionDTO promotion,
-            @RequestPart(value = "imageFile") MultipartFile imageFile,
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
             @PathVariable("id") String id) {
         Response response = promotionService.updatePromotion(promotion, id, imageFile);
         return ResponseEntity.status(response.getStatusCode()).body(response);
