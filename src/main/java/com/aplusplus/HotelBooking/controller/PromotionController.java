@@ -51,7 +51,7 @@ public class PromotionController {
     @PutMapping("/update-promotion/{id}")
     public ResponseEntity<Response> updatePromotion(
             @RequestPart(value = "promotion") PromotionDTO promotion,
-            @RequestPart(value = "imageFile") MultipartFile imageFile,
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
             @PathVariable("id") String id) {
         Response response = promotionService.updatePromotion(promotion, id, imageFile);
         return ResponseEntity.status(response.getStatusCode()).body(response);
@@ -73,7 +73,6 @@ public class PromotionController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-latest-promotion")
     public ResponseEntity<Response> getLatestPromotion(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
         Pageable pageable = PageRequest.of(page, size);
