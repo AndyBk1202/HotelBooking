@@ -28,7 +28,7 @@ public class Booking {
     private int numOfAdults;
     private int totalNumOfGuest;
     private String bookingCode;
-    private Double percentOfDiscount;
+    private Integer percentOfDiscount;
     private Double finalPrice;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")

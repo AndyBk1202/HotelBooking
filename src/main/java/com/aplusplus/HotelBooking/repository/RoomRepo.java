@@ -31,7 +31,7 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
     Long getNumberOfBooking(Long roomId);
 
     @Query(value = "SELECT MAX(percent_of_discount) FROM promotions p JOIN room_promotion rp ON p.id = rp.promotion_id WHERE room_id = :roomId AND end_date >= :now", nativeQuery = true)
-    Double getMaxDiscount(Long roomId, LocalDate now);
+    Integer getMaxDiscount(Long roomId, LocalDate now);
 
     @Query(value = "SELECT room_type, COUNT(room_type) as total_bookings " +
             "FROM bookings b JOIN payments p ON b.id = p.booking_id " +
