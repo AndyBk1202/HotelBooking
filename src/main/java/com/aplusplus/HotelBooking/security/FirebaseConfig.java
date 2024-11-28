@@ -15,14 +15,21 @@ import java.io.InputStream;
 public class FirebaseConfig {
 
     @PostConstruct
-    public void init() throws IOException {
-        InputStream serviceAccount = new ClassPathResource("serviceAccountKey.json").getInputStream();
+    public void init(){
+        try{
+            InputStream serviceAccount = new ClassPathResource("serviceAccountKey.json").getInputStream();
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setStorageBucket("hotelbooking-fc85a.appspot.com")
-                .build();
-
-        FirebaseApp.initializeApp(options);
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setStorageBucket("hotelbooking-fc85a.appspot.com")
+                    .build();
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
+                System.out.println("FirebaseApp đã được khởi tạo thành công.");
+            }
+        }
+        catch (Exception e){
+            throw new RuntimeException("Không thể khởi tạo FirebaseApp", e);
+        }
     }
 }
