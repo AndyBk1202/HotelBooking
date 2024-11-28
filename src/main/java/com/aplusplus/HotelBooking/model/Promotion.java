@@ -1,6 +1,7 @@
 package com.aplusplus.HotelBooking.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class Promotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull(message = "Percent of discount is required")
-    private Double percentOfDiscount;
+    private Integer percentOfDiscount;
     @NotBlank(message = "Promotion title is required")
     private String promotionTitle;
     private String description;

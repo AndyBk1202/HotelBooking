@@ -11,6 +11,7 @@ import com.aplusplus.HotelBooking.service.FirebaseStorageService;
 import com.aplusplus.HotelBooking.service.interf.IPromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -108,10 +109,11 @@ public class PromotionService implements IPromotionService {
                 }
                 listRoomType.sort(String::compareTo);
                 promotionDTO.setListRoomTypes(listRoomType.toArray(new String[0]));
-
                 promotionDTOS.add(promotionDTO);
             }
-
+            response.setCurrentPage(pageable.getPageNumber());
+            response.setTotalPages(promotionRepository.findAll(pageable).getTotalPages());
+            response.setTotalElements(promotionRepository.findAll(pageable).getTotalElements());
             response.setStatusCode(200);
             response.setPromotionList(promotionDTOS);
         }
@@ -127,24 +129,7 @@ public class PromotionService implements IPromotionService {
         Response response = new Response();
         try {
             Promotion promotionUpdate = promotionRepository.findById(Long.parseLong(promotionId)).orElseThrow(() -> new Exception("Promotion not found"));
-            if (newPromotion.getPercentOfDiscount() != null) {
-                promotionUpdate.setPercentOfDiscount(newPromotion.getPercentOfDiscount());
-            }
-            if (newPromotion.getDescription() != null && !newPromotion.getDescription().isEmpty()) {
-                promotionUpdate.setDescription(newPromotion.getDescription());
-            }
-            if (newPromotion.getPromotionTitle() != null && !newPromotion.getPromotionTitle().isEmpty()) {
-                promotionUpdate.setPromotionTitle(newPromotion.getPromotionTitle());
-            }
-            if (newPromotion.getStartDate() != null && !newPromotion.getStartDate().toString().isEmpty()) {
-                promotionUpdate.setStartDate(newPromotion.getStartDate());
-            }
-            if (newPromotion.getEndDate() != null && !newPromotion.getEndDate().toString().isEmpty()) {
-                promotionUpdate.setEndDate(newPromotion.getEndDate());
-            }
-
             if (newPromotion.getListRoomTypes() != null) {
-
 
                 // for removing room type from promotion
                 List<String> listOfNewRoomType = List.of(newPromotion.getListRoomTypes());
@@ -248,7 +233,7 @@ public class PromotionService implements IPromotionService {
     public Response getLatestPromotion(Pageable pageable) {
         Response response = new Response();
         try {
-            List<Promotion> promotions = promotionRepository.findTop3ByCurrentDateBetweenStartDateAndEndDateOrderByStartDateDesc(pageable);
+            List<Promotion> promotions = promotionRepository.findTop3ByCurrentDateBetweenStartDateAndEndDateOrderByStartDateDesc(pageable).getContent();
             List<PromotionDTO> promotionDTOS = new ArrayList<>();
 
             for (Promotion promotion : promotions) {
@@ -267,6 +252,9 @@ public class PromotionService implements IPromotionService {
                 promotionDTOS.add(promotionDTO);
             }
 
+            response.setCurrentPage(pageable.getPageNumber());
+            response.setTotalPages(promotionRepository.findTop3ByCurrentDateBetweenStartDateAndEndDateOrderByStartDateDesc(pageable).getTotalPages());
+            response.setTotalElements(promotionRepository.findTop3ByCurrentDateBetweenStartDateAndEndDateOrderByStartDateDesc(pageable).getTotalElements());
             response.setStatusCode(200);
             response.setPromotionList(promotionDTOS);
         }
