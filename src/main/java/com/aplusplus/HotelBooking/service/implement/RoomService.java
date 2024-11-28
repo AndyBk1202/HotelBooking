@@ -280,9 +280,9 @@ public class RoomService implements IRoomService {
         if(averageRating == null) averageRating = 0.;
         Long numberOfRating = roomRepo.getNumberOfRating(roomDTO.getId());
         Long numberOfBooking = roomRepo.getNumberOfBooking(roomDTO.getId());
-        Double maxDiscount = roomRepo.getMaxDiscount(roomDTO.getId(), LocalDate.now());
-        if(maxDiscount == null) maxDiscount = 0.;
-        Double newPrice = roomDTO.getRoomPrice() - roomDTO.getRoomPrice()*maxDiscount/100;
+        Integer maxDiscount = roomRepo.getMaxDiscount(roomDTO.getId(), LocalDate.now());
+        if(maxDiscount == null) maxDiscount = 0;
+        Double newPrice = roomDTO.getRoomPrice() - roomDTO.getRoomPrice()*maxDiscount/100.0;
 
         roomDTO.setAverageRating(averageRating);
         roomDTO.setNumberOfRating(numberOfRating);

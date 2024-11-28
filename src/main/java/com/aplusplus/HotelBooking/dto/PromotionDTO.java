@@ -13,7 +13,8 @@ import java.util.HashSet;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PromotionDTO {
     private Long id;
-    private Double percentOfDiscount;
+    private Integer percentOfDiscount;
+    @NotBlank(message = "Promotion title is required")
     private String promotionTitle;
     private String description;
     private LocalDate startDate;

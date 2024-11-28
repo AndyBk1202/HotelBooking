@@ -73,7 +73,6 @@ public class PromotionController {
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-latest-promotion")
     public ResponseEntity<Response> getLatestPromotion(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
         Pageable pageable = PageRequest.of(page, size);
