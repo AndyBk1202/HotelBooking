@@ -19,6 +19,6 @@ public interface PromotionRepo extends JpaRepository<Promotion, Long> {
 
     @Query("SELECT p FROM Promotion p " +
             "ORDER BY p.startDate ASC")
-    List<Promotion> findTop3ByCurrentDateBetweenStartDateAndEndDateOrderByStartDateDesc(Pageable pageable);
+    Page<Promotion> findTop3ByCurrentDateBetweenStartDateAndEndDateOrderByStartDateDesc(Pageable pageable);
 
 }

@@ -20,7 +20,7 @@ public class Promotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull(message = "Percent of discount is required")
-    private Double percentOfDiscount;
+    private Integer percentOfDiscount;
     private String promotionTitle;
     private String description;
     @NotNull(message = "Start date is required")
