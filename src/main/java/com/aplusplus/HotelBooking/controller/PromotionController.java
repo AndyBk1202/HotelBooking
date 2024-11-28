@@ -43,7 +43,7 @@ public class PromotionController {
 
     // user service updatePromotion
     // still has bugs, when removing room type from promotion list room type, it still remains in the list
-    @PostMapping("/update-promotion/{id}")
+    @PutMapping("/update-promotion/{id}")
     public ResponseEntity<Response> updatePromotion(
             @RequestPart(value = "promotion") PromotionDTO promotion,
             @RequestPart(value = "imageFile") MultipartFile imageFile,

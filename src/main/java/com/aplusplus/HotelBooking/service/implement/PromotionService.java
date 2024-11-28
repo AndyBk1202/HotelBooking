@@ -42,7 +42,7 @@ public class PromotionService implements IPromotionService {
             promotion.setRooms(roomListPromotion);
 
             // save image to firebase
-            if (imageFile != null) {
+            if (imageFile.getSize() != 0) {
                 String imageUrl = firebaseStorageService.uploadFile(imageFile);
                 promotion.setPromotionPhotoUrl(imageUrl);
             }
