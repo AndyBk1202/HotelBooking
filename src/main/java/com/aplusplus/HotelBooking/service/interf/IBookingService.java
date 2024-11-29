@@ -18,4 +18,7 @@ public interface IBookingService {
     Response updateBooking(BookingDTO request);
     Response cancelBooking(String bookingId);
     Response getRecentBookings(Long userId, LocalDate now, Pageable pageable);
+    Response bookingHistory(String username, Pageable pageable);
+    Response getBookingsOutOfDue(Pageable pageable);
+    Response deleteBookingOutOfDue(String bookingId);
 }

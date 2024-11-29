@@ -141,10 +141,66 @@ public class EmailService {
             """;
     }
 
+    public String createCancellationHtmlEmail(Booking booking) {
+        return """
+        <html>
+        <body style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #cc0000;">Thông báo Hủy Đặt phòng</h2>
+            <p>Chào <b>
+            """ + booking.getUser().getName() + """
+            </b>,</p>
+            <p>Rất tiếc, nhưng chúng tôi phải thông báo rằng đơn đặt phòng của bạn đã bị hủy do quá hạn thanh toán. Dưới đây là thông tin chi tiết về booking của bạn:</p>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Mã đặt phòng:</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                    """ + booking.getBookingCode() + """
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Ngày nhận phòng:</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                    """ + booking.getCheckInDate() + """
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Ngày trả phòng:</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                    """ + booking.getCheckOutDate() + """
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Số người lớn:</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                    """ + booking.getNumOfAdults() + """
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">Số trẻ em:</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                    """ + booking.getNumOfChildren() + """
+                    </td>
+                </tr>
+            </table>
+
+            <p>Chúng tôi rất tiếc vì sự bất tiện này và hy vọng sẽ có cơ hội phục vụ bạn trong tương lai.</p>
+            <p>Trân trọng,<br>Đội ngũ khách sạn</p>
+        </body>
+        </html>
+    """;
+    }
     public void sendBookingConfirmationEmail(Booking booking) {
         String toEmail = booking.getUser().getEmail();
         String subject = "Xác nhận Đặt phòng của bạn";
         String htmlContent = createBookingHtmlEmail(booking);
+        sendHtmlEmail(toEmail, subject, htmlContent);
+    }
+
+    public void sendBookingCancellationEmail(Booking booking) {
+        String toEmail = booking.getUser().getEmail();
+        String subject = "Thông báo Hủy Đặt phòng do quá hạn thanh toán";
+        String htmlContent = createCancellationHtmlEmail(booking);
         sendHtmlEmail(toEmail, subject, htmlContent);
     }
 }

@@ -268,4 +268,68 @@ public class BookingService implements IBookingService {
         }
         return response;
     }
+
+    @Override
+    public Response bookingHistory(String username, Pageable pageable) {
+        Response response = new Response();
+        try{
+
+            User user = userRepo.findByEmail(username).orElseThrow(() -> new OurException("User not found"));
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsHistory(user.getId(), pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
+            response.setStatusCode(200);
+            response.setMessage("Find booking information successfully");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response getBookingsOutOfDue(Pageable pageable) {
+        Response response = new Response();
+        try {
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsOutOfDue(pageable, LocalDate.now()).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
+            response.setStatusCode(200);
+            response.setMessage("Find bookings out of due successfully!");
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response deleteBookingOutOfDue(String bookingId) {
+        Response response = new Response();
+        try {
+            Booking booking = bookingRepository.findById(Long.valueOf(bookingId)).orElseThrow(() -> new OurException("Booking not found"));
+            bookingRepository.delete(booking);
+            emailService.sendBookingCancellationEmail(booking);
+            response.setStatusCode(200);
+            response.setMessage("Delete booking successfully!");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
 }

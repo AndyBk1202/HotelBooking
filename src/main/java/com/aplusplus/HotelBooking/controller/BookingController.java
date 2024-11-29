@@ -96,4 +96,19 @@ public class BookingController {
         Response response = bookingService.getRecentBookings(Long.valueOf(userId), now, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/late-payment")
+    public ResponseEntity<Response> getBookingsOutOfDue(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = bookingService.getBookingsOutOfDue(pageable);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/delete-booking/{id}")
+    public ResponseEntity<Response> deleteBooking(@PathVariable(value = "id") String bookingId){
+        Response response = bookingService.deleteBookingOutOfDue(bookingId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }
