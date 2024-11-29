@@ -129,6 +129,11 @@ public class PromotionService implements IPromotionService {
         Response response = new Response();
         try {
             Promotion promotionUpdate = promotionRepository.findById(Long.parseLong(promotionId)).orElseThrow(() -> new Exception("Promotion not found"));
+            promotionUpdate.setPromotionTitle(newPromotion.getPromotionTitle());
+            promotionUpdate.setDescription(newPromotion.getDescription());
+            promotionUpdate.setStartDate(newPromotion.getStartDate());
+            promotionUpdate.setEndDate(newPromotion.getEndDate());
+            promotionUpdate.setPercentOfDiscount(newPromotion.getPercentOfDiscount());
             if (newPromotion.getListRoomTypes() != null) {
 
                 // for removing room type from promotion
