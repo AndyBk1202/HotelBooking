@@ -5,16 +5,12 @@ import java.util.Date;
 import java.util.Map;
 
 import com.aplusplus.HotelBooking.dto.CreatePaymentLinkRequestBody;
-import com.aplusplus.HotelBooking.dto.Response;
-import com.aplusplus.HotelBooking.exception.OurException;
 import com.aplusplus.HotelBooking.model.Payment;
 import com.aplusplus.HotelBooking.repository.BookingRepo;
 import com.aplusplus.HotelBooking.repository.PaymentRepo;
 import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.implement.PaymentService;
-import com.aplusplus.HotelBooking.service.interf.IPaymentService;
 import com.aplusplus.HotelBooking.utils.Utils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,8 +27,8 @@ import vn.payos.type.PaymentData;
 import vn.payos.type.PaymentLinkData;
 
 @RestController
-@RequestMapping("/order")
-public class OrderController {
+@RequestMapping("/payments")
+public class PaymentController {
     private final PayOS payOS;
 
     @Autowired
@@ -49,7 +45,7 @@ public class OrderController {
     @Autowired
     private PaymentService paymentService;
 
-    public OrderController(PayOS payOS) {
+    public PaymentController(PayOS payOS) {
         super();
         this.payOS = payOS;
     }
@@ -162,13 +158,7 @@ public class OrderController {
         String targetUrl = "http://localhost:5173/recent-booking";
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(targetUrl));
-//        if(objectNodeResponse.get("error").asInt() == -1){
-//            response.setStatusCode(400);
-//            response.setMessage();
-//            return ResponseEntity.status(response.getStatusCode()).body(response);
-//        }
         paymentService.confirmPayment(orderCode, objectNodeResponse.get("data").get("status").asText());
-//        return ResponseEntity.status(response.getStatusCode()).body(response);
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 }
