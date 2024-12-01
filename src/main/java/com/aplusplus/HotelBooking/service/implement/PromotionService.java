@@ -33,14 +33,34 @@ public class PromotionService implements IPromotionService {
             Promotion promotion = promotionMapper.toPromotion(promotionDTO);
             List<Room> roomListPromotion = new ArrayList<>();
 
+            List<List<Room>> listRoomByPromotions = new ArrayList<>();
+
             for (int i = 0; i < listRoomType.length; i++) {
                 List<Room> rooms = roomRepository.findByRoomType(listRoomType[i]);
+                if (rooms.size() == 0) {
+                    throw new Exception("Room type not found!!");
+                }
+                listRoomByPromotions.add(rooms);
+            }
+
+            List<Room> roomListPromotions = new ArrayList<>();
+            for (List<Room> rooms : listRoomByPromotions) {
                 for (Room room : rooms) {
                     room.getPromotions().add(promotion);
+                    roomListPromotions.add(room);
                 }
-                roomListPromotion.addAll(rooms);
             }
-            promotion.setRooms(roomListPromotion);
+            promotion.setRooms(roomListPromotions);
+
+
+//            for (int i = 0; i < listRoomType.length; i++) {
+//                List<Room> rooms = roomRepository.findByRoomType(listRoomType[i]);
+//                for (Room room : rooms) {
+//                    room.getPromotions().add(promotion);
+//                }
+//                roomListPromotion.addAll(rooms);
+//            }
+//            promotion.setRooms(roomListPromotion);
 
             // save image to firebase
             if (imageFile.getSize() != 0) {
@@ -138,36 +158,40 @@ public class PromotionService implements IPromotionService {
 
                 // for removing room type from promotion
                 List<String> listOfNewRoomType = List.of(newPromotion.getListRoomTypes());
-                boolean[] isRoomTypeExist = new boolean[listOfNewRoomType.size()];
-                Arrays.fill(isRoomTypeExist, false);
-                // false when room type is not exist in new promotion
+//                boolean[] isRoomTypeExist = new boolean[listOfNewRoomType.size()];
 
+                // false when room type is not exist in new promotion
                 for (Room room : promotionUpdate.getRooms()) {
                     if (!listOfNewRoomType.contains(room.getRoomType())) {
                         room.getPromotions().remove(promotionUpdate);
-                    } else {
-                        isRoomTypeExist[listOfNewRoomType.indexOf(room.getRoomType())] = true;
                     }
                 }
 
-                // for adding new room type to promotion
+                ArrayList<List<Room>> listRoomByPromotions = new ArrayList<>();
+
+                for (int i = 0; i < listOfNewRoomType.toArray().length; i++) {
+                    List<Room> rooms = roomRepository.findByRoomType(listOfNewRoomType.get(i));
+
+                    if (rooms.size() == 0) {
+                        throw new Exception("Room type not found!!");
+                    }
+                    listRoomByPromotions.add(rooms);
+                }
+
                 List<Room> roomListPromotions = new ArrayList<>();
-                for (int i = 0; i < newPromotion.getListRoomTypes().length; i++) {
-                    if (!isRoomTypeExist[i]) {
-                        List<Room> rooms = roomRepository.findByRoomType(newPromotion.getListRoomTypes()[i]);
-                        for (Room room : rooms) {
-                            // check duplicate room
-                            if (!roomListPromotions.contains(room)) {
-                                room.getPromotions().add(promotionUpdate);
-                            }
+                for (List<Room> rooms : listRoomByPromotions) {
+                    for (Room room : rooms) {
+                        if (!promotionUpdate.getRooms().contains(room)) {
+                            room.getPromotions().add(promotionUpdate);
+                            roomListPromotions.add(room);
                         }
-                        roomListPromotions.addAll(rooms);
                     }
                 }
+
                 promotionUpdate.setRooms(roomListPromotions);
 
                 // save image to firebase
-                if (imageFile != null) {
+                if (imageFile.getSize() != 0) {
                     String imageUrl = firebaseStorageService.uploadFile(imageFile);
                     promotionUpdate.setPromotionPhotoUrl(imageUrl);
                 }
