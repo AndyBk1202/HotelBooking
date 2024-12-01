@@ -38,7 +38,7 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
             "JOIN rooms r ON b.room_id = r.id " +
             "WHERE YEAR(check_in_date) = :year AND MONTH(check_in_date) = :month AND payment_status = 'PAID'" +
             "GROUP BY room_type " +
-            "ORDER BY total_bookings " +
+            "ORDER BY total_bookings DESC " +
             "LIMIT 1", nativeQuery = true)
     Map<String, Object> getTrendingRoomAndNumberOfBookingsByYearAndMonth(Integer year, Integer month);
 }
