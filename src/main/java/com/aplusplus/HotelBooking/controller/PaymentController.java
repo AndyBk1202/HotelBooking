@@ -1,16 +1,25 @@
 package com.aplusplus.HotelBooking.controller;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 
 import com.aplusplus.HotelBooking.dto.CreatePaymentLinkRequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.aplusplus.HotelBooking.dto.Response;
+import com.aplusplus.HotelBooking.exception.OurException;
+import com.aplusplus.HotelBooking.model.Payment;
+import com.aplusplus.HotelBooking.repository.BookingRepo;
+import com.aplusplus.HotelBooking.repository.PaymentRepo;
+import com.aplusplus.HotelBooking.repository.UserRepo;
+import com.aplusplus.HotelBooking.service.implement.PaymentService;
+import com.aplusplus.HotelBooking.service.interf.IPaymentService;
+import com.aplusplus.HotelBooking.utils.Utils;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,6 +34,20 @@ import vn.payos.type.PaymentLinkData;
 @RequestMapping("/order")
 public class OrderController {
     private final PayOS payOS;
+
+    @Autowired
+    private PaymentRepo paymentRepo;
+
+    @Autowired
+    private BookingRepo bookingRepo;
+
+    @Autowired
+    private UserRepo userRepo;
+
+    @Autowired
+    private Utils utils;
+    @Autowired
+    private PaymentService paymentService;
 
     public OrderController(PayOS payOS) {
         super();
@@ -51,6 +74,12 @@ public class OrderController {
                     .item(item).returnUrl(returnUrl).cancelUrl(cancelUrl).build();
 
             CheckoutResponseData data = payOS.createPaymentLink(paymentData);
+
+            Payment payment = new Payment();
+            payment.setPaymentCode(orderCode);
+            payment.setBooking(bookingRepo.findByBookingCode(description).orElseThrow(() -> new Exception("Booking not found")));
+            payment.setUser(userRepo.findByEmail(utils.getCurrentUsername()).orElseThrow(() -> new Exception("User not found")));
+            paymentRepo.save(payment);
 
             response.put("error", 0);
             response.put("message", "success");
@@ -125,5 +154,21 @@ public class OrderController {
             response.set("data", null);
             return response;
         }
+    }
+
+    @GetMapping("/confirm")
+    public ResponseEntity<Void> confirmPayment(@RequestParam long orderCode){
+        ObjectNode objectNodeResponse = getOrderById(orderCode);
+        String targetUrl = "http://localhost:5173/recent-booking";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create(targetUrl));
+//        if(objectNodeResponse.get("error").asInt() == -1){
+//            response.setStatusCode(400);
+//            response.setMessage();
+//            return ResponseEntity.status(response.getStatusCode()).body(response);
+//        }
+        paymentService.confirmPayment(orderCode, objectNodeResponse.get("data").get("status").asText());
+//        return ResponseEntity.status(response.getStatusCode()).body(response);
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 }

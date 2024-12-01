@@ -6,12 +6,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.swing.text.html.Option;
 import java.awt.print.Book;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepo extends JpaRepository<Booking, Long> {
+
+    Optional<Booking> findByBookingCode(String bookingCode);
     Optional<Booking> findByCheckInDateAndCheckOutDate(LocalDate checkInDate, LocalDate checkOutDate);
     Page<Booking> findAll(Pageable pageable);
 
@@ -33,7 +36,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
     @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId", nativeQuery = true)
     Page<Booking> getBookingsByUser(Long userId, Pageable pageable);
 
-    @Query(value = "SELECT * FROM " +
+    @Query(value = "SELECT b.* FROM " +
             "bookings b JOIN payments p ON b.id = p.booking_id " +
             "WHERE b.user_id = :userId AND payment_status = 'PAID'", nativeQuery = true)
     Page<Booking> getBookingsHistory(Long userId, Pageable pageable);
