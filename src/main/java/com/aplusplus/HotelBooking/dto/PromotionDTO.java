@@ -2,18 +2,24 @@ package com.aplusplus.HotelBooking.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Set;
+import java.util.HashSet;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PromotionDTO {
-    @NotBlank(message = "Percent of discount is required")
-    private Double percentOfDiscount;
+    private Long id;
+    private Integer percentOfDiscount;
+    @NotBlank(message = "Promotion title is required")
+    private String promotionTitle;
     private String description;
-    @NotBlank(message = "Start date is required")
     private LocalDate startDate;
-    @NotBlank(message = "End date is required")
     private LocalDate endDate;
+    private String promotionPhotoUrl;
+    private String[] listRoomTypes;
+
 }

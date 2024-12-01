@@ -28,6 +28,8 @@ public class Response {
 
     private PaymentDTO payment;
 
+    private ReviewDTO review;
+
     private PromotionDTO promotion;
 
     private List<UserDTO> userList;
@@ -38,7 +40,11 @@ public class Response {
 
     private List<PaymentDTO> paymentList;
 
+    private List<ReviewDTO> reviewList;
+
     private List<PromotionDTO> promotionList;
+
+    private ReportDTO report;
 
     //Pagination information
     private Integer currentPage;

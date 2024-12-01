@@ -44,6 +44,9 @@ public class RoomService implements IRoomService {
         try{
             Room room = roomRepo.findById(Long.valueOf(roomId)).orElseThrow(() -> new OurException("Room not found"));
             RoomDTO roomDTO = roomMapper.roomToRoomDTO(room);
+            // Get room statistic and new price with promotion
+            roomDTO = setRoomStatistic(roomDTO);
+
             response.setRoom(roomDTO);
             response.setStatusCode(200);
             response.setMessage("Get room with id: " + roomId + " successfully");
@@ -61,10 +64,13 @@ public class RoomService implements IRoomService {
     public Response getAllRoom(Pageable pageable) {
         Response response = new Response();
         try{
-//            List<Room> roomList = roomRepo.findAll();
-//            List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
             Page<RoomDTO> roomDTOPage = roomRepo.findAll(pageable).map(roomMapper::roomToRoomDTO);
-            response.setRoomList(roomDTOPage.getContent());
+            List<RoomDTO> roomDTOList = roomDTOPage.getContent();
+            // Set room statistic
+            for(RoomDTO roomDTO : roomDTOList){
+                roomDTO = setRoomStatistic(roomDTO);
+            }
+            response.setRoomList(roomDTOList);
             response.setCurrentPage(roomDTOPage.getNumber());
             response.setTotalPages(roomDTOPage.getTotalPages());
             response.setTotalElements(roomDTOPage.getTotalElements());
@@ -172,6 +178,13 @@ public class RoomService implements IRoomService {
     public Response getAvailableRoomsByDateAndNumOfGuest(LocalDate checkInDate, LocalDate checkoutDate, int numOfGuest, Pageable pageable) {
         Response response = new Response();
         try{
+            // Check legal for check out date and check in date
+            if(checkInDate.isBefore(LocalDate.now()) || checkoutDate.isBefore(LocalDate.now())){
+                throw new IllegalArgumentException("Check in date and check out date must come after now");
+            }
+            if(checkoutDate.isBefore(checkInDate)){
+                throw new IllegalArgumentException("Check out date must come after check in date");
+            }
             Page<Room> roomPage = roomRepo.findByDateAndNumOfGuest(checkInDate,checkoutDate,numOfGuest, pageable);
             List<Room> roomList = roomPage.getContent();
             List<RoomDTO> roomDTOList = roomMapper.roomListToRoomDTOList(roomList);
@@ -185,6 +198,11 @@ public class RoomService implements IRoomService {
                 }
                 roomDTOList.get(i).setRemain(roomDTOList.get(i).getRoomAmount() - count);
                 roomDTOList.get(i).setRoomStatus("Còn " + roomDTOList.get(i).getRemain() + " phòng trống");
+            }
+
+            //Set room statistic
+            for(RoomDTO roomDTO : roomDTOList){
+                roomDTO = setRoomStatistic(roomDTO);
             }
             response.setRoomList(roomDTOList);
             response.setCurrentPage(roomPage.getNumber());
@@ -203,6 +221,14 @@ public class RoomService implements IRoomService {
     public Response checkAvailable(LocalDate checkInDate, LocalDate checkOutDate, int totalGuest, Long roomId) {
         Response response = new Response();
         try{
+            // Check legal for check out date and check in date
+            if(checkInDate.isBefore(LocalDate.now()) || checkOutDate.isBefore(LocalDate.now())){
+                throw new IllegalArgumentException("Check in date and check out date must come after now");
+            }
+            if(checkOutDate.isBefore(checkInDate)){
+                throw new IllegalArgumentException("Check out date must come after check in date");
+            }
+
             Room room = roomRepo.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
             RoomDTO roomDTO = roomMapper.roomToRoomDTO(room);
             if(room.getRoomCapacity() < totalGuest) throw new OurException("Sức chứa của phòng không đủ đáp ứng nhu cầu của bạn, vui lòng chọn loại phòng khác lớn hơn!");
@@ -247,5 +273,23 @@ public class RoomService implements IRoomService {
                 count++;
         }
         return room.getRoomAmount() - count;
+    }
+
+    public RoomDTO setRoomStatistic(RoomDTO roomDTO){
+        Double averageRating = roomRepo.getAverageRating(roomDTO.getId());
+        if(averageRating == null) averageRating = 0.;
+        Long numberOfRating = roomRepo.getNumberOfRating(roomDTO.getId());
+        Long numberOfBooking = roomRepo.getNumberOfBooking(roomDTO.getId());
+        Integer maxDiscount = roomRepo.getMaxDiscount(roomDTO.getId(), LocalDate.now());
+        if(maxDiscount == null) maxDiscount = 0;
+        Double newPrice = roomDTO.getRoomPrice() - roomDTO.getRoomPrice()*maxDiscount/100.0;
+
+        roomDTO.setAverageRating(averageRating);
+        roomDTO.setNumberOfRating(numberOfRating);
+        roomDTO.setNumberOfBooking(numberOfBooking);
+        roomDTO.setPercentOfDiscount(maxDiscount.longValue());
+        roomDTO.setNewPrice(newPrice.longValue());
+
+        return roomDTO;
     }
 }
