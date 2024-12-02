@@ -68,8 +68,9 @@ public class PromotionController {
     // user service applyPromotionToRoom
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-promotion-by-room/{room_id}")
-    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id) {
-        Response response = promotionService.getPromotionByRoomId(room_id);
+    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = promotionService.getPromotionsByRoomId(room_id, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
