@@ -155,7 +155,7 @@ public class PaymentController {
     @GetMapping("/confirm")
     public ResponseEntity<Void> confirmPayment(@RequestParam long orderCode){
         ObjectNode objectNodeResponse = getOrderById(orderCode);
-        String targetUrl = "http://localhost:5173/recent-booking";
+        String targetUrl = "https://hotelbooking-liard.vercel.app/recent-booking";
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(targetUrl));
         paymentService.confirmPayment(orderCode, objectNodeResponse.get("data").get("status").asText());
