@@ -61,7 +61,7 @@ public class BookingController {
     @GetMapping("/booking-history")
     public ResponseEntity<Response> getBookingsByUserId(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
         Pageable pageable = PageRequest.of(page, size);
-        Response response = bookingService.getBookingsByUsername(utils.getCurrentUsername(), pageable);
+        Response response = bookingService.bookingHistory(utils.getCurrentUsername(), pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 

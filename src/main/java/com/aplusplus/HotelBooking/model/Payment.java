@@ -2,6 +2,7 @@ package com.aplusplus.HotelBooking.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.mapstruct.control.MappingControl;
 
@@ -12,18 +13,16 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotBlank(message = "Booking code is required")
-    private String bookingCode;
-    @NotBlank(message = "Payment method is required")
-    private String paymentMethod;
-    @NotBlank(message = "Payment status is required")
+    @NotNull(message = "Payment code is required")
+    private Long paymentCode;
+//    @NotBlank(message = "Payment status is required")
     private String paymentStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne
-    @JoinColumn(name = "booking_id", referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
     private Booking booking;
 }

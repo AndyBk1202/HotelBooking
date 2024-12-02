@@ -10,4 +10,6 @@ public interface IPaymentService {
     Response updatePayment(String paymentId, String paymentMethod, String paymentStatus, String paymentAmount);
     Response deletePayment(String paymentId);
     Response viewPayment();
+
+    Response confirmPayment(Long paymentCode, String paymentStatus);
 }
