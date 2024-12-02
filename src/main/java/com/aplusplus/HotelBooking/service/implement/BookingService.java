@@ -9,6 +9,7 @@ import com.aplusplus.HotelBooking.model.Booking;
 import com.aplusplus.HotelBooking.model.Room;
 import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.BookingRepo;
+import com.aplusplus.HotelBooking.repository.PaymentRepo;
 import com.aplusplus.HotelBooking.repository.RoomRepo;
 import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.EmailService;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -30,6 +32,7 @@ public class BookingService implements IBookingService {
     private final BookingMapper bookingMapper;
     private final UserRepo userRepo;
     private final RoomRepo roomRepo;
+    private final PaymentRepo paymentRepo;
     private final RoomService roomService;
     private final Utils utils;
     private final EmailService emailService;
@@ -64,7 +67,7 @@ public class BookingService implements IBookingService {
             // Add discount and final price
             Integer percentOfDiscount = roomRepo.getMaxDiscount(roomId, LocalDate.now());
             if(percentOfDiscount == null) percentOfDiscount = 0;
-            Double finalPrice = room.getRoomPrice() - room.getRoomPrice()*percentOfDiscount/100;
+            Double finalPrice = (room.getRoomPrice() - room.getRoomPrice()*percentOfDiscount/100) * ChronoUnit.DAYS.between(bookingRequest.getCheckInDate(), bookingRequest.getCheckOutDate());
             bookingRequest.setPercentOfDiscount(percentOfDiscount);
             bookingRequest.setFinalPrice(finalPrice);
 
@@ -94,6 +97,7 @@ public class BookingService implements IBookingService {
         try{
             var booking = bookingRepository.findById(Long.parseLong(bookingId)).orElseThrow(() -> new OurException("Booking not found"));
             BookingDTO bookingDTO = bookingMapper.toBookingDTO(booking);
+            if(paymentRepo.isPaid(bookingDTO.getBookingCode()) == 1) bookingDTO.setPaymentStatus("PAID");
 
             response.setBooking(bookingDTO);
             response.setStatusCode(200);
@@ -136,7 +140,9 @@ public class BookingService implements IBookingService {
             }
 
             bookingDTOList = bookingDTOPage.getContent();
-
+            bookingDTOList.forEach(bookingDTO ->
+                    bookingDTO.setPaymentStatus(paymentRepo.isPaid(bookingDTO.getBookingCode()) == 1 ? "PAID" : "UNPAID")
+            );
             response.setBookingList(bookingDTOList);
             response.setCurrentPage(bookingDTOPage.getNumber());
             response.setTotalElements(bookingDTOPage.getTotalElements());
@@ -156,6 +162,10 @@ public class BookingService implements IBookingService {
         try{
             Page<BookingDTO> bookingDTOPage = bookingRepository.findAll(pageable).map(bookingMapper::toBookingDTO);
             List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+
+            bookingDTOList.forEach(bookingDTO ->
+                    bookingDTO.setPaymentStatus(paymentRepo.isPaid(bookingDTO.getBookingCode()) == 1 ? "PAID" : "UNPAID")
+            );
 
             response.setBookingList(bookingDTOList);
             response.setCurrentPage(bookingDTOPage.getNumber());
@@ -179,6 +189,9 @@ public class BookingService implements IBookingService {
             User user = userRepo.findByEmail(username).orElseThrow(() -> new OurException("User not found"));
             Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsByUser(user.getId(), pageable).map(bookingMapper::toBookingDTO);
             List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+            bookingDTOList.forEach(bookingDTO ->
+                    bookingDTO.setPaymentStatus(paymentRepo.isPaid(bookingDTO.getBookingCode()) == 1 ? "PAID" : "UNPAID")
+            );
 
             response.setBookingList(bookingDTOList);
             response.setCurrentPage(bookingDTOPage.getNumber());
@@ -205,6 +218,9 @@ public class BookingService implements IBookingService {
             LocalDate now = LocalDate.now();
             Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsByRoom(Long.valueOf(roomId), now, pageable).map(bookingMapper::toBookingDTO);
             List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+            bookingDTOList.forEach(bookingDTO ->
+                    bookingDTO.setPaymentStatus(paymentRepo.isPaid(bookingDTO.getBookingCode()) == 1 ? "PAID" : "UNPAID")
+            );
 
             response.setBookingList(bookingDTOList);
             response.setCurrentPage(bookingDTOPage.getNumber());
@@ -255,6 +271,9 @@ public class BookingService implements IBookingService {
         try{
             Page<BookingDTO> bookingDTOPage = bookingRepository.getRecentBookings(userId, now, pageable).map(bookingMapper::toBookingDTO);
             List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+            bookingDTOList.forEach(bookingDTO ->
+                    bookingDTO.setPaymentStatus(paymentRepo.isPaid(bookingDTO.getBookingCode()) == 1 ? "PAID" : "UNPAID")
+            );
 
             response.setBookingList(bookingDTOList);
             response.setCurrentPage(bookingDTOPage.getNumber());
@@ -263,6 +282,73 @@ public class BookingService implements IBookingService {
             response.setStatusCode(200);
             response.setMessage("Successful");
         } catch(Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response bookingHistory(String username, Pageable pageable) {
+        Response response = new Response();
+        try{
+
+            User user = userRepo.findByEmail(username).orElseThrow(() -> new OurException("User not found"));
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsHistory(user.getId(), pageable).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+            bookingDTOList.forEach(bookingDTO ->
+                    bookingDTO.setPaymentStatus(paymentRepo.isPaid(bookingDTO.getBookingCode()) == 1 ? "PAID" : "UNPAID")
+            );
+
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
+            response.setStatusCode(200);
+            response.setMessage("Find booking information successfully");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response getBookingsOutOfDue(Pageable pageable) {
+        Response response = new Response();
+        try {
+            Page<BookingDTO> bookingDTOPage = bookingRepository.getBookingsOutOfDue(pageable, LocalDate.now()).map(bookingMapper::toBookingDTO);
+            List<BookingDTO> bookingDTOList = bookingDTOPage.getContent();
+
+            response.setBookingList(bookingDTOList);
+            response.setCurrentPage(bookingDTOPage.getNumber());
+            response.setTotalElements(bookingDTOPage.getTotalElements());
+            response.setTotalPages(bookingDTOPage.getTotalPages());
+            response.setStatusCode(200);
+            response.setMessage("Find bookings out of due successfully!");
+        } catch (Exception e){
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response deleteBookingOutOfDue(String bookingId) {
+        Response response = new Response();
+        try {
+            Booking booking = bookingRepository.findById(Long.valueOf(bookingId)).orElseThrow(() -> new OurException("Booking not found"));
+            bookingRepository.delete(booking);
+            emailService.sendBookingCancellationEmail(booking);
+            response.setStatusCode(200);
+            response.setMessage("Delete booking successfully!");
+        } catch (OurException e){
+            response.setStatusCode(404);
+            response.setMessage(e.getMessage());
+        } catch (Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
         }

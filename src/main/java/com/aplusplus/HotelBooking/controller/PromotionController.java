@@ -59,7 +59,7 @@ public class PromotionController {
 
     // user service deletePromotion
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping("/delete-promotion/{id}")
+    @DeleteMapping("/delete-promotion/{id}")
     public ResponseEntity<Response> deletePromotion(@PathVariable("id") String id){
         Response response = promotionService.deletePromotion(id);
         return ResponseEntity.status(response.getStatusCode()).body(response);

@@ -37,7 +37,4 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    @OneToOne(mappedBy = "booking")
-    private Payment payment;
 }

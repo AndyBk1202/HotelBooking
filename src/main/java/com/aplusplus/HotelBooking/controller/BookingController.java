@@ -61,7 +61,7 @@ public class BookingController {
     @GetMapping("/booking-history")
     public ResponseEntity<Response> getBookingsByUserId(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
         Pageable pageable = PageRequest.of(page, size);
-        Response response = bookingService.getBookingsByUsername(utils.getCurrentUsername(), pageable);
+        Response response = bookingService.bookingHistory(utils.getCurrentUsername(), pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -94,6 +94,21 @@ public class BookingController {
         Pageable pageable = PageRequest.of(page, size);
         LocalDate now = LocalDate.now();
         Response response = bookingService.getRecentBookings(Long.valueOf(userId), now, pageable);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/late-payment")
+    public ResponseEntity<Response> getBookingsOutOfDue(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Response response = bookingService.getBookingsOutOfDue(pageable);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/delete-booking/{id}")
+    public ResponseEntity<Response> deleteBooking(@PathVariable(value = "id") String bookingId){
+        Response response = bookingService.deleteBookingOutOfDue(bookingId);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 }
