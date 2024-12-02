@@ -36,8 +36,8 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
     @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId", nativeQuery = true)
     Page<Booking> getBookingsByUser(Long userId, Pageable pageable);
 
-    @Query(value = "SELECT b.* FROM " +
-            "bookings b JOIN payments p ON b.id = p.booking_id " +
+    @Query(value = "SELECT b.id, booking_code, check_in_date, check_out_date, final_price, num_of_adults, num_of_children, percent_of_discount, total_num_of_guest, room_id, b.user_id FROM " +
+            "bookings b LEFT JOIN payments p ON b.id = p.booking_id " +
             "WHERE b.user_id = :userId AND payment_status = 'PAID'", nativeQuery = true)
     Page<Booking> getBookingsHistory(Long userId, Pageable pageable);
 
