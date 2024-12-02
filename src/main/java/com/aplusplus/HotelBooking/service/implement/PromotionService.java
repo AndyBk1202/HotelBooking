@@ -10,8 +10,9 @@ import com.aplusplus.HotelBooking.repository.RoomRepo;
 import com.aplusplus.HotelBooking.service.FirebaseStorageService;
 import com.aplusplus.HotelBooking.service.interf.IPromotionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -236,20 +237,48 @@ public class PromotionService implements IPromotionService {
     }
 
     @Override
-    public Response getPromotionByRoomId(String roomId) {
+    public Response getPromotionsByRoomId(String roomId, Pageable pageable) {
         Response response = new Response();
         try {
             Room room = roomRepository.findById(Long.parseLong(roomId)).orElseThrow(() -> new Exception("Room not found"));
             List<Promotion> promotions = room.getPromotions();
+
+            // Manually paginate the list
+            int pageSize = pageable.getPageSize();
+            int currentPage = pageable.getPageNumber();
+            int startItem = currentPage * pageSize;
+            List<Promotion> paginatedPromotions;
+
             List<PromotionDTO> promotionDTOS = new ArrayList<>();
 
-            for (Promotion promotion : promotions) {
+            if (startItem >= promotions.size()) {
+                paginatedPromotions = List.of(); // Empty list if startItem exceeds size
+            } else {
+                int endItem = Math.min(startItem + pageSize, promotions.size());
+                paginatedPromotions = promotions.subList(startItem, endItem);
+            }
+
+            for (Promotion promotion : paginatedPromotions) {
                 PromotionDTO promotionDTO = promotionMapper.toPromotionDTO(promotion);
+
+                List<Room> rooms = promotion.getRooms();
+                List<String> listRoomType = new ArrayList<>();
+
+                for (Room roomPromotion : rooms) {
+                    if (!listRoomType.contains(roomPromotion.getRoomType())) {
+                        listRoomType.add(roomPromotion.getRoomType());
+                    }
+                }
+                listRoomType.sort(String::compareTo);
+                promotionDTO.setListRoomTypes(listRoomType.toArray(new String[0]));
                 promotionDTOS.add(promotionDTO);
             }
 
             response.setStatusCode(200);
             response.setPromotionList(promotionDTOS);
+            response.setCurrentPage(currentPage);
+            response.setTotalPages(promotions.size() / pageSize);
+            response.setTotalElements((long) promotions.size());
         }
         catch (Exception e) {
             response.setStatusCode(404);

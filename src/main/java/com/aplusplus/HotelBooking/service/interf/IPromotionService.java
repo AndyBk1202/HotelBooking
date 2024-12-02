@@ -12,6 +12,6 @@ public interface IPromotionService {
     Response updatePromotion(PromotionDTO promotion, String promotionId, MultipartFile imageFile); // Admin
     Response deletePromotion(String promotionId);
     Response applyPromotionToRoom(String promotionId, String roomId); // Liên quan Booking
-    Response getPromotionByRoomId(String roomId); // List các promotion áp dụng cho 1 room
+    Response getPromotionsByRoomId(String roomId, Pageable pageable); // List các promotion áp dụng cho 1 room
     Response getLatestPromotion(Pageable pageable); // User xem promotion mới nhất
 }
