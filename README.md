@@ -14,12 +14,13 @@ A simple hotel booking system developed using Spring Boot. The application allow
 
 ## Features
 - **Registration and Login**: Users can register an account and log in with email and password.
-- **Booking**: Users can create, view, cancel bookings and pay booking with PayOS
+- **Booking**: Users can search/view  rooms; create, view, cancel bookings and pay booking with PayOS
 - **Room Comments and Ratings**: Users can comment and rate rooms after their stay.
-- **Admin Features**: 
-  - Admins can manage bookings.
-  - Admins can create promotions.
-  - Admins can generate reports.
+- **Admin Features**:
+  - Admin can create rooms. 
+  - Admin can manage bookings.
+  - Admin can create promotions.
+  - Admin can generate reports.
 - **File Upload**: Users/Admin can upload images to Firebase Storage.
 
 ## Future Improvements:
