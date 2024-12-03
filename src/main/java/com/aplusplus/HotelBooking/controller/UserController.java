@@ -51,7 +51,7 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-all-customers")
-    public ResponseEntity<Response> getAllCustomers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+    public ResponseEntity<Response> getAllCustomers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = userService.getAllCustomers(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);

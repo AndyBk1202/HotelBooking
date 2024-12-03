@@ -31,7 +31,7 @@ public class PromotionController {
     // use service getAllPromotion
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-all-promotions")
-    public ResponseEntity<Response> getAllPromotion(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+    public ResponseEntity<Response> getAllPromotion(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = promotionService.getAllPromotion(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
@@ -68,7 +68,7 @@ public class PromotionController {
     // user service applyPromotionToRoom
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-promotion-by-room/{room_id}")
-    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+    public ResponseEntity<Response> getPromotionByRoom(@PathVariable("room_id") String room_id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = promotionService.getPromotionsByRoomId(room_id, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);

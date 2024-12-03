@@ -30,7 +30,7 @@ public class RoomController {
 
     @GetMapping("/get-all")
     //@PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Response> getAllRoom(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+    public ResponseEntity<Response> getAllRoom(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "9") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = roomService.getAllRoom(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
@@ -74,7 +74,7 @@ public class RoomController {
                                                       @RequestParam LocalDate checkOutDate,
                                                       @RequestParam(defaultValue = "2") int totalGuest,
                                                       @RequestParam(defaultValue = "0") int page,
-                                                      @RequestParam(defaultValue = "5") int size){
+                                                      @RequestParam(defaultValue = "9") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = roomService.getAvailableRoomsByDateAndNumOfGuest(checkInDate, checkOutDate, totalGuest, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);

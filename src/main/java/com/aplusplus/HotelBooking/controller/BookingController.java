@@ -13,6 +13,7 @@ import com.aplusplus.HotelBooking.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +35,8 @@ public class BookingController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-all-bookings")
-    public ResponseEntity<Response> getAllBooking(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
-        Pageable pageable = PageRequest.of(page, size);
+    public ResponseEntity<Response> getAllBooking(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "checkInDate"));
         Response response = bookingService.getAllBooking(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
@@ -51,7 +52,7 @@ public class BookingController {
     public ResponseEntity<Response> getBookingByDate(@RequestParam(required = false) String roomType,
                                                      @RequestParam(required = false) LocalDate startDate,
                                                      @RequestParam(required = false) LocalDate endDate,
-                                                     @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size) {
+                                                     @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Response response = bookingService.getBookingsByDateAndRoomType(roomType, startDate, endDate, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
@@ -59,7 +60,7 @@ public class BookingController {
 
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/booking-history")
-    public ResponseEntity<Response> getBookingsByUserId(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+    public ResponseEntity<Response> getBookingsByUserId(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = bookingService.bookingHistory(utils.getCurrentUsername(), pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
@@ -67,7 +68,7 @@ public class BookingController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-by-room/{roomId}")
-    public ResponseEntity<Response> getBookingByRoomId(@PathVariable("roomId") String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "3") int size){
+    public ResponseEntity<Response> getBookingByRoomId(@PathVariable("roomId") String roomId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
         Response response = bookingService.getBookingsByRoomId(roomId, pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
