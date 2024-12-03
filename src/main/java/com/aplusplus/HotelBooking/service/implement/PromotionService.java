@@ -277,7 +277,7 @@ public class PromotionService implements IPromotionService {
             response.setStatusCode(200);
             response.setPromotionList(promotionDTOS);
             response.setCurrentPage(currentPage);
-            response.setTotalPages(promotions.size() / pageSize);
+            response.setTotalPages((int) Math.ceil(promotions.size() / pageSize));
             response.setTotalElements((long) promotions.size());
         }
         catch (Exception e) {
