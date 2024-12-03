@@ -18,27 +18,27 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
     Optional<Booking> findByCheckInDateAndCheckOutDate(LocalDate checkInDate, LocalDate checkOutDate);
     Page<Booking> findAll(Pageable pageable);
 
-    @Query("SELECT b FROM Booking b WHERE b.checkInDate >= :startDate AND b.checkInDate <= :endDate")
+    @Query("SELECT b FROM Booking b WHERE b.checkInDate >= :startDate AND b.checkInDate <= :endDate ORDER BY b.checkInDate DESC")
     Page<Booking> getBookingByDate(LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    @Query("SELECT b FROM Booking b WHERE b.room.roomType = :roomType")
+    @Query("SELECT b FROM Booking b WHERE b.room.roomType = :roomType ORDER BY b.checkInDate DESC")
     Page<Booking> getBookingsByRoomType(String roomType, Pageable pageable);
 
-    @Query("SELECT b FROM Booking b WHERE b.room.roomType = :roomType AND b.checkInDate >= :startDate AND b.checkInDate <= :endDate")
+    @Query("SELECT b FROM Booking b WHERE b.room.roomType = :roomType AND b.checkInDate >= :startDate AND b.checkInDate <= :endDate ORDER BY b.checkInDate DESC")
     Page<Booking> getBookingsByDateAndRoomType(String roomType, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId AND b.check_out_date >= :now", nativeQuery = true)
+    @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId AND b.check_out_date >= :now ORDER BY b.check_in_date DESC", nativeQuery = true)
     Page<Booking> getRecentBookings(Long userId, LocalDate now, Pageable pageable);
 
-    @Query(value = "SELECT * FROM bookings b WHERE b.room_id=:roomId AND b.check_out_date >= :now", nativeQuery = true)
+    @Query(value = "SELECT * FROM bookings b WHERE b.room_id=:roomId AND b.check_out_date >= :now ORDER BY b.check_in_date DESC", nativeQuery = true)
     Page<Booking> getBookingsByRoom(Long roomId, LocalDate now, Pageable pageable);
 
-    @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId", nativeQuery = true)
+    @Query(value = "SELECT * FROM bookings b WHERE b.user_id=:userId ORDER BY b.check_in_date DESC", nativeQuery = true)
     Page<Booking> getBookingsByUser(Long userId, Pageable pageable);
 
     @Query(value = "SELECT b.id, booking_code, check_in_date, check_out_date, final_price, num_of_adults, num_of_children, percent_of_discount, total_num_of_guest, room_id, b.user_id FROM " +
             "bookings b LEFT JOIN payments p ON b.id = p.booking_id " +
-            "WHERE b.user_id = :userId AND payment_status = 'PAID'", nativeQuery = true)
+            "WHERE b.user_id = :userId AND payment_status = 'PAID' ORDER BY b.check_in_date DESC", nativeQuery = true)
     Page<Booking> getBookingsHistory(Long userId, Pageable pageable);
 
     @Query(value = "SELECT COUNT(*) FROM " +
@@ -48,6 +48,6 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     @Query(value = "SELECT b.* FROM " +
             "bookings b LEFT JOIN payments p ON b.id = p.booking_id " +
-            "WHERE DATEDIFF(b.check_in_date, :now) <= 1 AND (payment_status != 'PAID' OR payment_status IS NULL)", nativeQuery = true)
+            "WHERE DATEDIFF(b.check_in_date, :now) <= 0 AND (payment_status != 'PAID' OR payment_status IS NULL)", nativeQuery = true)
     Page<Booking> getBookingsOutOfDue(Pageable pageable, LocalDate now);
 }

@@ -13,6 +13,7 @@ import com.aplusplus.HotelBooking.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,7 @@ public class BookingController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/get-all-bookings")
     public ResponseEntity<Response> getAllBooking(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "checkInDate"));
         Response response = bookingService.getAllBooking(pageable);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
