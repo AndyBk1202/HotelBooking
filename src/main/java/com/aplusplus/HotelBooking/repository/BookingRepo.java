@@ -46,7 +46,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
             "WHERE YEAR(check_in_date) = :year AND MONTH(check_in_date) = :month AND payment_status = 'PAID'", nativeQuery = true)
     Long getTotalBookingsByYearAndMonth(Integer year, Integer month);
 
-    @Query(value = "SELECT b.* FROM " +
+    @Query(value = "SELECT b.id, booking_code, check_in_date, check_out_date, final_price, num_of_adults, num_of_children, percent_of_discount, total_num_of_guest, room_id, b.user_id FROM " +
             "bookings b LEFT JOIN payments p ON b.id = p.booking_id " +
             "WHERE DATEDIFF(b.check_in_date, :now) <= 0 AND (payment_status != 'PAID' OR payment_status IS NULL)", nativeQuery = true)
     Page<Booking> getBookingsOutOfDue(Pageable pageable, LocalDate now);
