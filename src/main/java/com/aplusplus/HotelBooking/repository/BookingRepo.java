@@ -48,6 +48,6 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     @Query(value = "SELECT b.id, booking_code, check_in_date, check_out_date, final_price, num_of_adults, num_of_children, percent_of_discount, total_num_of_guest, room_id, b.user_id FROM " +
             "bookings b LEFT JOIN payments p ON b.id = p.booking_id " +
-            "WHERE DATEDIFF(b.check_in_date, :now) <= 0 AND (payment_status != 'PAID' OR payment_status IS NULL)", nativeQuery = true)
+            "WHERE DATEDIFF(b.check_in_date, :now) <= 0 AND (payment_status != 'PAID' OR payment_status IS NULL) ORDER BY b.check_in_date ASC", nativeQuery = true)
     Page<Booking> getBookingsOutOfDue(Pageable pageable, LocalDate now);
 }
