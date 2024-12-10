@@ -9,10 +9,13 @@ import com.aplusplus.HotelBooking.mapper.RoomMapper;
 import com.aplusplus.HotelBooking.model.Booking;
 import com.aplusplus.HotelBooking.model.Facility;
 import com.aplusplus.HotelBooking.model.Room;
+import com.aplusplus.HotelBooking.model.User;
 import com.aplusplus.HotelBooking.repository.FacilityRepo;
 import com.aplusplus.HotelBooking.repository.RoomRepo;
+import com.aplusplus.HotelBooking.repository.UserRepo;
 import com.aplusplus.HotelBooking.service.FirebaseStorageService;
 import com.aplusplus.HotelBooking.service.interf.IRoomService;
+import com.aplusplus.HotelBooking.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +26,7 @@ import java.awt.print.Book;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +42,10 @@ public class RoomService implements IRoomService {
     private FacilityRepo facilityRepo;
     @Autowired
     private FirebaseStorageService firebaseStorageService;
+    @Autowired
+    private Utils utils;
+    @Autowired
+    private UserRepo userRepo;
     @Override
     public Response getRoom(String roomId) {
         Response response = new Response();
@@ -64,7 +72,12 @@ public class RoomService implements IRoomService {
     public Response getAllRoom(Pageable pageable) {
         Response response = new Response();
         try{
-            Page<RoomDTO> roomDTOPage = roomRepo.findAll(pageable).map(roomMapper::roomToRoomDTO);
+            Page<RoomDTO> roomDTOPage;
+            User user = userRepo.findByEmail(utils.getCurrentUsername()).orElseThrow(() -> new OurException("User not found"));
+            if(Objects.equals(user.getRole(), "ADMIN"))
+                roomDTOPage = roomRepo.findAll(pageable).map(roomMapper::roomToRoomDTO);
+            else
+                roomDTOPage = roomRepo.findAllRooms(pageable).map(roomMapper::roomToRoomDTO);
             List<RoomDTO> roomDTOList = roomDTOPage.getContent();
             // Set room statistic
             for(RoomDTO roomDTO : roomDTOList){
